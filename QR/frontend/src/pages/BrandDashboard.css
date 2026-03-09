@@ -1,0 +1,162 @@
+/* frontend/src/pages/BrandDashboard.css */
+/* Kế thừa layout gốc */
+.dashboard-main {
+  padding: 20px 16px 60px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.dashboard-layout {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  gap: 24px;
+  animation: slideUpFade 0.5s ease-out;
+}
+
+/* Sidebar Brand */
+.brand-sidebar {
+  width: 320px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(32, 64, 128, 0.08);
+  border: 1px solid rgba(63, 120, 201, 0.15);
+  padding: 30px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.brand-logo-wrapper {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  margin-bottom: 20px;
+}
+
+.brand-logo-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px; /* Logo brand thường hình vuông bo góc */
+  object-fit: contain;
+  border: 4px solid #eaf1ff;
+  box-shadow: 0 8px 20px rgba(63, 120, 201, 0.2);
+  background: white;
+}
+
+/* Các thẻ cơ bản */
+.tab-body {
+  padding: 30px;
+  animation: fadeInDown 0.4s ease-out;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Kéo thả Excel */
+.excel-upload-zone {
+  width: 100%;
+  padding: 30px 20px;
+  border-radius: 16px;
+  border: 2px dashed #10b981; /* Màu xanh lá chuẩn Excel */
+  background: #f0fdf4;
+  color: #059669;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.excel-upload-zone:hover,
+.excel-upload-zone.dragging {
+  background: #d1fae5;
+  border-color: #059669;
+  transform: scale(1.01);
+}
+
+/* Toggle Switch (Công tắc bật/tắt) */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 26px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #cbd5e1;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #3f78c9;
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* Bố cục Form tạo mã */
+.qr-creation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.creation-section {
+  background: white;
+  border: 1px solid #e2e8f0;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+}
+
+.section-title {
+  color: #1e293b;
+  font-size: 16px;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 2px solid #f1f5f9;
+  padding-bottom: 10px;
+}
+
+/* Tái sử dụng các CSS khác từ UserDashboard nếu cần */
+@media (max-width: 992px) {
+  .qr-creation-grid {
+    grid-template-columns: 1fr;
+  }
+}
