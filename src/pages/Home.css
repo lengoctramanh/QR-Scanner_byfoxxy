@@ -1,0 +1,270 @@
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background: radial-gradient(1000px 600px at 50% 30%, #f6f8ff 0%, #e9eefb 55%, #dfe7fb 100%);
+  color:#2a3b55;
+}
+.menu-btn {
+  width: 46px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.12);
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+/* ===== WRAP giống About ===== */
+.web{
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 40px;
+}
+
+.panel{
+  width: min(1100px, 92vw);
+  min-height: 670px;
+  background: linear-gradient(#f7f9ff, #edf2ff);
+  border: 1px solid rgba(70, 110, 185, 0.22);
+  border-radius: 26px;
+  box-shadow: 0 28px 80px rgba(32, 64, 128, 0.16);
+  overflow: hidden;
+}
+
+/* ===== TOP BAR ===== */
+.top-bar{
+  height: 84px;
+  padding: 16px 22px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background: linear-gradient(180deg, #7fb0ea 0%, #6aa0e1 100%);
+  border-bottom: 1px solid rgba(255,255,255,0.35);
+}
+
+.logo-area{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+}
+
+.logo-area i{ font-size: 22px; }
+
+.logo-text{
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+  text-shadow: 0 2px 0 rgba(0,0,0,0.08);
+  font-size: 22px;
+}
+
+/* menu icon */
+.menu-area{ position: relative; }
+
+.menu-icon{
+ width: 46px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    background: linear-gradient(180deg, #7fb0ea 0%, #6aa0e1 100%);
+    cursor: pointer;
+    padding: 0;
+    outline: none;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+.menu-icon:hover{
+  background: rgba(255,255,255,0.18);
+  transform: translateY(-1px);
+}
+.menu-icon:active{
+  transform: translateY(0);
+  background: rgba(255,255,255,0.10);
+}
+
+.dropdown-menu-custom{
+  position:absolute;
+  top: 56px;
+  right: 0;
+  background-color: #2b5c8f;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+
+  opacity: 0;
+  transform: translateY(-10px) scale(0.98);
+  pointer-events: none;
+  transition: all 0.22s ease;
+  z-index: 100;
+  min-width: 160px;
+}
+
+.dropdown-menu-custom.show{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.dropdown-menu-custom a{
+  display:block;
+  color:white;
+  text-decoration:none;
+  padding: 12px 18px;
+  font-weight: 600;
+  text-align:center;
+}
+
+.dropdown-menu-custom a:hover{
+  background: rgba(255,255,255,0.18);
+}
+
+/* ===== TITLE giống About ===== */
+.page-title{
+  margin: 16px 0 10px;
+  text-align: center;
+  font-size: 42px;
+  font-weight: 800;
+  color: #2f4f82;
+  letter-spacing: 0.3px;
+}
+
+.title-divider{
+  width: min(520px, 76%);
+  height: 1px;
+  margin: 0 auto 0;
+  background: linear-gradient(90deg, transparent, rgba(65, 96, 160, 0.35), transparent);
+}
+
+/* ===== MAIN: canh giữa + khoảng cách đều nhau ===== */
+.home-main{
+  /* trừ header + title area (ước lượng), giúp nội dung nằm giữa panel */
+  min-height: calc(670px - 84px - 90px);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  /* 1 con số quyết định mọi khoảng cách */
+  gap: 22px;
+
+  padding: 22px 0 44px;
+}
+
+/* camera */
+.scanner-container{
+  width: 320px;
+  height: 320px;
+  margin: 0;                 /* không tự tạo khoảng cách */
+  position: relative;
+  border-radius: 22px;
+
+  background:
+    radial-gradient(120px 120px at 30% 25%, rgba(255,255,255,0.10), transparent 60%),
+    linear-gradient(135deg, #0b0f18 0%, #05060a 60%, #000 100%);
+
+  box-shadow:
+    0 22px 55px rgba(0,0,0,0.25),
+    inset 0 0 0 1px rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+
+.corner{
+  position:absolute;
+  width: 54px;
+  height: 54px;
+  border-color: rgba(255,255,255,0.92);
+  border-style: solid;
+  z-index:2;
+}
+
+.top-left{ top: 18px; left: 18px; border-width: 5px 0 0 5px; border-top-left-radius: 10px; }
+.top-right{ top: 18px; right: 18px; border-width: 5px 5px 0 0; border-top-right-radius: 10px; }
+.bottom-left{ bottom: 18px; left: 18px; border-width: 0 0 5px 5px; border-bottom-left-radius: 10px; }
+.bottom-right{ bottom: 18px; right: 18px; border-width: 0 5px 5px 0; border-bottom-right-radius: 10px; }
+
+.scan-line{
+  width: 86%;
+  height: 3px;
+  position:absolute;
+  left: 7%;
+  top: 14%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.95), transparent);
+  box-shadow: 0 0 16px rgba(255,255,255,0.55), 0 0 36px rgba(140,210,255,0.25);
+  border-radius: 999px;
+  animation: scanAnim 2.2s infinite ease-in-out;
+}
+
+@keyframes scanAnim{
+  0%   { transform: translateY(0); opacity:0; }
+  12%  { opacity:1; }
+  50%  { transform: translateY(240px); opacity:1; }
+  88%  { opacity:1; }
+  100% { transform: translateY(0); opacity:0; }
+}
+
+/* group nút: XẾP DỌC + Ở GIỮA */
+.actions{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px; /* khoảng cách giữa 2 nút = gap chung */
+}
+
+/* nút scan */
+.scan-btn{
+  margin: 0 !important;
+  border: 0;
+  min-width: 260px;
+
+  padding: 12px 44px;
+  border-radius: 999px;
+
+  font-weight: 900;
+  letter-spacing: 1px;
+  color:#fff;
+
+  background: linear-gradient(180deg, #6aa4e6 0%, #3f78c9 100%);
+  box-shadow: 0 16px 28px rgba(35, 80, 170, 0.18), inset 0 0 0 1px rgba(255,255,255,0.25);
+  cursor: pointer;
+  transition: transform .12s ease, filter .12s ease;
+}
+
+.scan-btn:hover{ transform: translateY(-2px); filter: brightness(1.02); }
+.scan-btn:active{ transform: translateY(0); }
+
+/* nút chọn ảnh */
+.gallery-box{
+  margin: 0 !important;
+  min-width: 260px;
+  justify-content: center;
+
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(25, 40, 60, 0.22);
+  background: rgba(255,255,255,0.70);
+  box-shadow: 0 10px 24px rgba(18, 38, 78, 0.08);
+  cursor:pointer;
+  transition: transform .12s ease, background .12s ease;
+}
+
+.gallery-box i{ font-size:18px; color:#1c2b41; }
+.gallery-box span{ font-weight:700; color:#1c2b41; }
+
+.gallery-box:hover{ transform: translateY(-2px); background: rgba(255,255,255,0.78); }
