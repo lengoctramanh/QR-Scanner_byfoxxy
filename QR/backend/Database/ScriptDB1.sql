@@ -2,25 +2,30 @@ DROP DATABASE IF EXISTS qr_anticounterfeit_hub;
 CREATE DATABASE qr_anticounterfeit_hub CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE qr_anticounterfeit_hub;
 
--- ==========================================
--- PHẦN 1: HỆ THỐNG TÀI KHOẢN & ĐỊNH DANH (Từ Script 1)
--- Sử dụng VARCHAR(50) cho UUID để chống hack IDOR
--- ==========================================
+
+-- HỆ THỐNG TÀI KHOẢN & ĐỊNH DANH 
+
 
 CREATE TABLE accounts (
-    account_id VARCHAR(50) PRIMARY KEY,
-    email VARCHAR(100) UNIQUE NOT NULL, 
+    account_id VARCHAR(50) PRIMARY KEY, -- UUID để chống IDOR
+    email VARCHAR(100) UNIQUE NOT NULL,
     phone VARCHAR(20) UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
     role ENUM('admin', 'brand', 'supplier', 'user') NOT NULL,
-    status ENUM('active', 'banned', 'pending') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    status ENUM('active', 'banned', 'pending') DEFAULT 'pending', -- Nên để mặc định là pending nếu cần xác thực email
+    avatar_url VARCHAR(255), -- Lưu đường dẫn ảnh như đã bàn ở trên
+    terms_accepted BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, 
+    last_login_at TIMESTAMP NULL, -- Lần đăng nhập gần nhất
+    reset_otp VARCHAR(10),
+    otp_expiry DATETIME
 );
 
 CREATE TABLE users (
     user_id VARCHAR(50) PRIMARY KEY,
     account_id VARCHAR(50) NOT NULL,
     full_name VARCHAR(100) NOT NULL,
+    dob DATE,
     gender ENUM('male', 'female', 'other', 'secret'),
     FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
 );
@@ -28,9 +33,13 @@ CREATE TABLE users (
 CREATE TABLE brands (
     brand_id VARCHAR(50) PRIMARY KEY,
     account_id VARCHAR(50) NOT NULL,
+    brand_owner VARCHAR(100) NOT NULL, 
     brand_name VARCHAR(100) NOT NULL,
+    logo_url VARCHAR(255),
     tax_id VARCHAR(50) NOT NULL,
     website VARCHAR(255),
+    industry VARCHAR(100),
+    product_categories TEXT,
     verified BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
 );
@@ -38,18 +47,22 @@ CREATE TABLE brands (
 CREATE TABLE suppliers (
     supplier_id VARCHAR(50) PRIMARY KEY,
     account_id VARCHAR(50) NOT NULL,
-    supplier_name VARCHAR(255) NOT NULL,
+    entity_name VARCHAR(255) NOT NULL,
+    tax_id VARCHAR(50),
+    supplier_type ENUM('individual', 'company') NOT NULL,
+    service_types VARCHAR(255), 
     operating_region VARCHAR(100),
+    business_scale VARCHAR(50),
     FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
 );
 
--- ==========================================
--- PHẦN 2: QUẢN LÝ SẢN XUẤT & LÔ HÀNG (Từ Script 2)
--- ==========================================
+
+-- QUẢN LÝ SẢN XUẤT & LÔ HÀNG 
 
 CREATE TABLE products (
     product_id VARCHAR(50) PRIMARY KEY,
     brand_id VARCHAR(50) NOT NULL,
+    suppiler_id VARCHAR(50) NOT NULL, 
     product_name VARCHAR(255) NOT NULL,
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -67,9 +80,7 @@ CREATE TABLE batches (
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
--- ==========================================
 -- PHẦN 3: LÕI MÃ QR & TRUY XUẤT (Kết hợp tối ưu)
--- ==========================================
 
 CREATE TABLE qr_codes (
     qr_id VARCHAR(50) PRIMARY KEY,
