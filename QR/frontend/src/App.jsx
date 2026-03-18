@@ -1,29 +1,35 @@
-import { Routes, Route } from "react-router-dom";
-import CodePage from "./pages/Code";
-import Home from "./pages/Home";
+import { Route, Routes } from "react-router-dom";
+import DashboardLayout from "./layouts/DashboardLayout";
+import PublicLayout from "./layouts/PublicLayout";
+import AdminDashboard from "./pages/AdminDashboard";
 import AboutPage from "./pages/About";
-import SuggestionPane from "./pages/Suggestion";
-import RegisterPage from "./pages/Register";
-import LoginPage from "./pages/Login";
-import ForgotPassword from "./pages/ForgotPassword";
-import UserDashboard from "./pages/UserDashboard";
 import BrandDashboard from "./pages/BrandDashboard";
-import SupplierDashboard from "./pages/SupplierDashboard"; // THÊM DÒNG NÀY
+import CodePage from "./pages/Code";
+import ForgotPassword from "./pages/ForgotPassword";
+import Home from "./pages/Home";
+import LoginPage from "./pages/Login";
+import RegisterPage from "./pages/Register";
+import SuggestionPane from "./pages/Suggestion";
+import UserDashboard from "./pages/UserDashboard";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/code" element={<CodePage />} />
-      <Route path="/about" element={<AboutPage />} />
-      <Route path="/suggestion" element={<SuggestionPane />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/forgot-password" element={<ForgotPassword />} />
-      <Route path="/profile" element={<UserDashboard />} />
-      <Route path="/brand-profile" element={<BrandDashboard />} />
-      {/* THÊM DÒNG NÀY CHO SUPPLIER */}
-      <Route path="/supplier-profile" element={<SupplierDashboard />} />
+      <Route element={<PublicLayout />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/code" element={<CodePage />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/suggestion" element={<SuggestionPane />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+      </Route>
+
+      <Route element={<DashboardLayout />}>
+        <Route path="/profile" element={<UserDashboard />} />
+        <Route path="/brand-profile" element={<BrandDashboard />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
+      </Route>
     </Routes>
   );
 }

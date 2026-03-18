@@ -1,5 +1,6 @@
 /* frontend/src/pages/BrandDashboard.css */
 /* Kế thừa layout gốc */
+/* Căn chỉnh bố cục Dashboard, đặt chiều rộng mở rộng linh hoạt */
 .dashboard-main {
   padding: 20px 16px 60px;
   display: flex;
@@ -16,7 +17,7 @@
   animation: slideUpFade 0.5s ease-out;
 }
 
-/* Sidebar Brand */
+/* Sidebar Brand (Thanh thông tin bên trái của Brand) */
 .brand-sidebar {
   width: 320px;
   background: white;
@@ -30,6 +31,7 @@
   flex-shrink: 0;
 }
 
+/* Vùng chứa Logo thương hiệu */
 .brand-logo-wrapper {
   position: relative;
   width: 140px;
@@ -47,7 +49,7 @@
   background: white;
 }
 
-/* Các thẻ cơ bản */
+/* Các thẻ cơ bản (Nội dung của từng Tab bên phải) */
 .tab-body {
   padding: 30px;
   animation: fadeInDown 0.4s ease-out;
@@ -55,7 +57,7 @@
   overflow-y: auto;
 }
 
-/* Kéo thả Excel */
+/* Kéo thả Excel (Khu vực upload file) */
 .excel-upload-zone {
   width: 100%;
   padding: 30px 20px;
@@ -73,6 +75,7 @@
   text-align: center;
 }
 
+/* Hiệu ứng khi kéo file vào vùng upload hoặc hover */
 .excel-upload-zone:hover,
 .excel-upload-zone.dragging {
   background: #d1fae5;
@@ -80,7 +83,7 @@
   transform: scale(1.01);
 }
 
-/* Toggle Switch (Công tắc bật/tắt) */
+/* Toggle Switch (Công tắc bật/tắt tự động sinh mã hệ thống) */
 .toggle-switch {
   position: relative;
   display: inline-block;
@@ -94,6 +97,7 @@
   height: 0;
 }
 
+/* Thanh trượt của Toggle Switch */
 .slider {
   position: absolute;
   cursor: pointer;
@@ -118,6 +122,7 @@
   border-radius: 50%;
 }
 
+/* Khi Toggle được checked (Bật) */
 input:checked + .slider {
   background-color: #3f78c9;
 }
@@ -126,7 +131,7 @@ input:checked + .slider:before {
   transform: translateX(24px);
 }
 
-/* Bố cục Form tạo mã */
+/* Bố cục Form tạo mã (Chia 2 cột: Tạo thủ công và tạo bằng Excel) */
 .qr-creation-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -155,6 +160,7 @@ input:checked + .slider:before {
 }
 
 /* Tái sử dụng các CSS khác từ UserDashboard nếu cần */
+/* Responsive cho màn hình nhỏ: chuyển về dạng 1 cột dọc */
 @media (max-width: 992px) {
   .qr-creation-grid {
     grid-template-columns: 1fr;

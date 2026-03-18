@@ -1,3 +1,4 @@
+/* Layout dùng chung cho User Dashboard */
 .dashboard-main {
   padding: 20px 16px 60px;
   display: flex;
@@ -14,6 +15,7 @@
   animation: slideUpFade 0.5s ease-out;
 }
 
+/* Sidebar thông tin người dùng thường */
 .user-sidebar {
   width: 320px;
   background: white;
@@ -27,6 +29,7 @@
   flex-shrink: 0;
 }
 
+/* Khu vực Avatar dạng hình tròn */
 .avatar-wrapper {
   position: relative;
   width: 120px;
@@ -100,6 +103,7 @@
   color: #3f78c9;
 }
 
+/* Nội dung hiển thị bên phải (Box chứa Tabs) */
 .dashboard-content {
   flex: 1;
   background: white;
@@ -111,6 +115,7 @@
   flex-direction: column;
 }
 
+/* Thanh điều hướng Tabs (Lịch sử, Mã còn hạn, Cài đặt) */
 .tab-nav {
   display: flex;
   background: #f8fbff;
@@ -161,6 +166,7 @@
   overflow-y: auto;
 }
 
+/* Gird layout cho các thẻ QR hiển thị dạng lưới */
 .scan-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -216,6 +222,7 @@
   color: #1e293b;
 }
 
+/* Hiển thị thời gian còn lại (đổi xanh/đỏ dựa vào active) */
 .time-left {
   font-size: 13px;
   color: #ef4444;
@@ -265,6 +272,7 @@
   color: #3f78c9;
 }
 
+/* Form Settings dùng chung cho toàn dự án */
 .settings-form {
   max-width: 600px;
 }
@@ -298,6 +306,7 @@
   transform: translateY(-2px);
 }
 
+/* Responsive Styles */
 @media (max-width: 992px) {
   .dashboard-layout {
     flex-direction: column;
@@ -351,7 +360,7 @@
   }
 }
 
-
+/* MODAL / OVERLAY (Dành cho việc hiện chi tiết lịch sử quét) */
 .modal-overlay {
   position: fixed;
   top: 0;

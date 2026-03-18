@@ -1,3 +1,4 @@
+/* Căn giữa toàn bộ vùng chứa form login */
 .login-main {
   padding: 20px 16px 60px;
   display: flex;
@@ -7,6 +8,7 @@
   overflow-y: auto;
 }
 
+/* Thẻ (card) chứa form đăng nhập và banner */
 .login-card {
   width: 100%;
   max-width: 900px;
@@ -20,6 +22,7 @@
   min-height: 550px;
 }
 
+/* Vùng banner bên trái dùng gradient xanh */
 .login-banner {
   flex: 1;
   background: linear-gradient(135deg, #2b5c8f 0%, #3f78c9 100%);
@@ -49,6 +52,7 @@
   line-height: 1.5;
 }
 
+/* Text thay đổi linh động (animated) trong banner */
 .banner-content strong {
   display: block;
   font-size: 18px;
@@ -57,6 +61,7 @@
   animation: fadeInDown 0.5s ease-out;
 }
 
+/* Vùng chứa các họa tiết trang trí (vòng tròn, QR code) của banner */
 .banner-graphic {
   position: relative;
   height: 200px;
@@ -90,6 +95,7 @@
   animation: dynamicPulse 3s infinite ease-in-out;
 }
 
+/* Vùng chứa form đăng nhập bên phải */
 .login-form-container {
   flex: 1.2;
   padding: 40px 50px;
@@ -112,6 +118,7 @@
   margin: 0 0 25px;
 }
 
+/* Nút toggle để chuyển đổi giữa đăng nhập bằng Password và OTP */
 .login-method-toggle {
   display: flex;
   background: #f1f5f9;
@@ -139,6 +146,7 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+/* Style cho các nhóm input */
 .login-form .form-group {
   margin-bottom: 18px;
   position: relative;
@@ -182,6 +190,7 @@
   background: white;
 }
 
+/* Nút con mắt để ẩn/hiện mật khẩu */
 .toggle-pw-btn {
   position: absolute;
   right: 12px;
@@ -197,6 +206,7 @@
   color: #3f78c9;
 }
 
+/* Nút "Get OTP" xuất hiện khi chọn đăng nhập bằng OTP */
 .get-otp-btn {
   position: absolute;
   right: 6px;
@@ -216,6 +226,7 @@
   color: white;
 }
 
+/* Khu vực "Remember me" và "Forgot Password" */
 .form-actions {
   display: flex;
   justify-content: space-between;
@@ -244,6 +255,7 @@
   text-decoration: underline;
 }
 
+/* Nút Submit đăng nhập chính */
 .submit-login-btn {
   width: 100%;
   padding: 15px;
@@ -273,6 +285,7 @@
   cursor: not-allowed;
 }
 
+/* Dòng gạch ngang "OR CONTINUE WITH" */
 .social-login-divider {
   text-align: center;
   margin: 25px 0;
@@ -300,6 +313,7 @@
   font-weight: 700;
 }
 
+/* Các nút đăng nhập bằng Mạng xã hội (Google, Apple) */
 .social-buttons {
   display: flex;
   gap: 12px;
@@ -334,6 +348,7 @@
   font-size: 18px;
 }
 
+/* Khung chuyển sang trang Đăng ký */
 .register-prompt {
   text-align: center;
   font-size: 14px;
@@ -346,6 +361,7 @@
   text-decoration: none;
 }
 
+/* Alert hiển thị trạng thái Thành công hoặc Thất bại */
 .msg-alert {
   display: flex;
   align-items: center;
@@ -369,6 +385,7 @@
   border: 1px solid #b5e3c7;
 }
 
+/* Spinner quay vòng khi đang loading */
 .spinner {
   width: 24px;
   height: 24px;
@@ -378,6 +395,7 @@
   animation: spin 1s linear infinite;
 }
 
+/* Hiệu ứng trượt nhẹ */
 .slide-in {
   animation: fadeInDown 0.3s ease-out;
 }
@@ -388,9 +406,10 @@
   }
 }
 
+/* Responsive cho màn hình nhỏ (Mobile/Tablet) */
 @media (max-width: 768px) {
   .login-banner {
-    display: none;
+    display: none; /* Ẩn banner bên trái trên mobile */
   }
   .login-form-container {
     padding: 30px 25px;

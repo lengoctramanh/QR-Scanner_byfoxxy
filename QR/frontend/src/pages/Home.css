@@ -1,3 +1,4 @@
+/* Layout chính cho trang Home (Quét mã), tính toán chiều cao min để responsive tốt */
 .home-main {
   min-height: calc(670px - 84px - 90px);
   display: flex;
@@ -8,6 +9,7 @@
   padding: 22px 0 44px;
 }
 
+/* Khung viền mô phỏng Camera quét QR code */
 .scanner-container {
   width: 320px;
   height: 320px;
@@ -27,6 +29,7 @@
   overflow: hidden;
 }
 
+/* Các viền góc (corner) của khung Camera quét (Tạo UI giống máy quét thật) */
 .corner {
   position: absolute;
   width: 54px;
@@ -61,6 +64,7 @@
   border-bottom-right-radius: 10px;
 }
 
+/* Thanh tia laser (scan-line) chạy lên xuống mô phỏng việc quét */
 .scan-line {
   width: 86%;
   height: 3px;
@@ -80,6 +84,7 @@
   animation: scanAnim 2.2s infinite ease-in-out;
 }
 
+/* Các nút hành động bên dưới (Quét từ Camera, Quét từ ảnh) */
 .actions {
   display: flex;
   flex-direction: column;
@@ -88,6 +93,7 @@
   gap: 22px;
 }
 
+/* Nút Bắt đầu Quét / Dừng Camera */
 .scan-btn {
   margin: 0 !important;
   border: 0;
@@ -115,6 +121,7 @@
   transform: translateY(0);
 }
 
+/* Nút Chọn ảnh từ Thư viện (Gallery) */
 .gallery-box {
   margin: 0 !important;
   min-width: 260px;
@@ -145,6 +152,7 @@
   background: rgba(255, 255, 255, 0.78);
 }
 
+/* Hộp thoại hiển thị Kết quả quét (Result Box) */
 .result-box {
   width: 320px;
   background: white;
@@ -171,6 +179,7 @@
   flex: 1;
 }
 
+/* Nút (x) đóng hộp thoại kết quả */
 .close-result {
   background: none;
   border: none;
@@ -185,6 +194,7 @@
   color: #ff4d4d;
 }
 
+/* Chữ hiển thị kết quả (có tự động xuống dòng tránh bị tràn) */
 .result-text {
   margin: 0;
   font-size: 15px;
@@ -192,6 +202,7 @@
   color: #2a3b55;
 }
 
+/* Định dạng link bên trong kết quả nếu nó là URL hợp lệ */
 .result-text a {
   color: #3f78c9;
   text-decoration: none;

@@ -1,16 +1,19 @@
+/* Padding thân trang Đóng góp ý kiến */
 .suggestion-main {
   padding: 20px 40px 40px;
   flex: 1;
 }
 
+/* Layout chia 2 cột (Box Cảm ơn & Box Form) ở màn lớn, xếp dọc ở màn nhỏ */
 .suggestion-layout {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column-reverse; /* Đảo ngược để form nằm trên trên mobile */
   gap: 30px;
   max-width: 1000px;
   margin: 0 auto;
 }
 
+/* Icon Bóng đèn tiêu đề */
 .title-icon-main {
   width: 34px;
   height: 34px;
@@ -20,6 +23,7 @@
   animation: gentleGlow 1s infinite alternate ease-in-out;
 }
 
+/* Hiệu ứng toả sáng nhấp nháy liên tục cho icon bóng đèn */
 @keyframes gentleGlow {
   0% {
     filter: drop-shadow(0 0 2px rgba(65, 134, 245, 0.4));
@@ -34,6 +38,7 @@
   }
 }
 
+/* Khung form người dùng nhập liệu */
 .form-container {
   flex: 1.2;
   background: white;
@@ -44,6 +49,7 @@
   transition: all 0.5s ease;
 }
 
+/* Khi gửi thành công, form bị làm mờ và vô hiệu hoá click */
 .form-hidden {
   opacity: 0.3;
   pointer-events: none;
@@ -88,6 +94,7 @@
   border-color: #3f78c9;
 }
 
+/* Date Input Hack: Ghi đè CSS input type date mặc định */
 .suggestion-form input[type="date"] {
   color: #2a3b55;
   text-transform: uppercase;
@@ -135,6 +142,7 @@
   cursor: pointer;
 }
 
+/* Ẩn cái calendar picker indicator gốc của Chrome đi nhưng giữ vùng click */
 .hidden-date-input::-webkit-calendar-picker-indicator {
   position: absolute;
   top: 0;
@@ -167,6 +175,7 @@
   transform: translateY(-2px);
 }
 
+/* Khung tri ân (Appreciation Card) bên cạnh form */
 .appreciation-card {
   flex: 0.8;
   padding: 30px;
@@ -193,6 +202,7 @@
   opacity: 0.9;
 }
 
+/* Style cho Appreciation Card đổi màu khi Form gửi thành công */
 .success-mode {
   background: #ffffff;
   color: #3f78c9;
@@ -216,6 +226,7 @@
   color: #555;
 }
 
+/* Nút bấm ở màn hình success */
 .btn-reset {
   margin-top: 20px;
   background: none;
@@ -268,6 +279,7 @@
   box-shadow: 0 6px 15px rgba(63, 120, 201, 0.4);
 }
 
+/* Animation nhảy tưng tưng cho icon Success */
 @keyframes bounceSuccess {
   from {
     transform: translateY(0) scale(1);
@@ -290,6 +302,7 @@
   }
 }
 
+/* Đổi thành 2 cột nằm cạnh nhau trên Desktop */
 @media (min-width: 992px) {
   .suggestion-layout {
     flex-direction: row;
@@ -297,6 +310,7 @@
   }
 }
 
+/* FILE UPLOAD STYLES (Giống bên Register nhưng viết lại để file gọn độc lập) */
 .file-upload-zone {
   width: 100%;
   padding: 20px 15px;

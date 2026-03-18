@@ -1,26 +1,26 @@
 const express = require("express");
 const cors = require("cors");
+const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require("./routes/adminRoutes");
+const scanRoutes = require("./routes/scanRoutes");
 require("dotenv").config();
-require("./config/db");
 
 const app = express();
 
+// cấu hình xử lý trung gian
+// kết nối cổng 5173 frontend với cổng 5000 backend
 app.use(cors());
+// server đọc dữ liệu từ json
 app.use(express.json());
 
-const authRoutes = require("./routes/authRoutes");
+// Route
 app.use("/api/auth", authRoutes);
-const userRoutes = require("./routes/userRoutes");
-app.use("/api/user", userRoutes);
-const brandRoutes = require("./routes/brandRoutes");
-app.use("/api/brand", brandRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/scan", scanRoutes);
 
-app.get("/", (req, res) => {
-  res.send("Chào mừng đến với Backend của Real QR Scanner!");
-});
-
+// chạy server
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(` Backend Server đang chạy tại: http://localhost:${PORT}`);
+  console.log(`Backend Server is running on: http://localhost:${PORT}`);
 });

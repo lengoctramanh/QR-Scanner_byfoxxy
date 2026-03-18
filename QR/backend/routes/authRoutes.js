@@ -1,18 +1,15 @@
 const express = require("express");
+const multer = require("multer");
+
+const authForgotPasswordController = require("../controllers/authForgotPassword");
+const authLoginController = require("../controllers/authLogin");
+const authRegisterController = require("../controllers/authRegister");
+
 const router = express.Router();
-const { register } = require("../controllers/registerController");
-const { login } = require("../controllers/loginController");
+const upload = multer({ storage: multer.memoryStorage() });
 
-const {
-  forgotPassword,
-  verifyOTP,
-  resetPassword,
-} = require("../controllers/recoveryController");
-
-router.post("/register", register);
-router.post("/login", login);
-router.post("/forgot-password", forgotPassword);
-router.post("/verify-otp", verifyOTP);
-router.post("/reset-password", resetPassword);
+router.post("/login", authLoginController.login);
+router.post("/register", upload.any(), authRegisterController.register);
+router.post("/forgot-password", authForgotPasswordController.requestOtp);
 
 module.exports = router;

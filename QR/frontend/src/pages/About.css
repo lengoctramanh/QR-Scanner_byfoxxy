@@ -1,3 +1,4 @@
+/* Cấu hình layout chính cho trang About, căn giữa các phần tử theo chiều dọc */
 .about-main {
   width: 100%;
   display: flex;
@@ -6,10 +7,12 @@
   padding: 40px 16px 60px;
 }
 
+/* Hiệu ứng trượt xuống và mờ dần cho tiêu đề */
 .about-title-wrapper {
   animation: fadeInDown 0.8s ease-out forwards;
 }
 
+/* Định dạng chữ cho tiêu đề "ABOUT US" */
 .about-title {
   color: #3f78c9;
   font-size: 24px;
@@ -22,12 +25,14 @@
   gap: 10px;
 }
 
+/* Hiệu ứng nhịp đập (pulse) liên tục cho icon cạnh tiêu đề */
 .title-icon {
   width: 26px;
   height: 26px;
   animation: dynamicPulse 2s infinite ease-in-out;
 }
 
+/* Thẻ (card) màu trắng chứa toàn bộ nội dung thông tin, có đổ bóng và bo góc */
 .about-card {
   background-color: white;
   width: 100%;
@@ -41,11 +46,13 @@
   animation: slideUpFade 0.8s ease-out 0.2s forwards;
 }
 
+/* Padding cho từng mục thông tin nhỏ bên trong thẻ card */
 .info-section {
   padding: 6px 6px;
 }
 
-.section-title {
+/* Định dạng tiêu đề của từng mục (Version, User Policies...) */
+h5.section-title {
   color: #3f78c9;
   font-size: 15px;
   font-weight: bold;
@@ -59,6 +66,7 @@
   margin: 0 0 0 18px;
 }
 
+/* Danh sách các chính sách (User Policies), bỏ dấu chấm tròn mặc định của ul */
 .policy-list {
   list-style-type: none;
   padding-left: 24px;
@@ -69,6 +77,7 @@
   margin-bottom: 8px;
   position: relative;
 }
+/* Tạo dấu chấm tròn custom (dấu bullet) màu xanh bằng pseudo-element ::before */
 .policy-list li::before {
   content: "•";
   color: #3f78c9;
@@ -79,12 +88,14 @@
   top: -2px;
 }
 
+/* Đường kẻ ngang đứt nét phân cách giữa các phần */
 hr {
   border: 0;
   border-top: 1px dashed rgba(138, 189, 223, 0.5);
   margin: 16px 0;
 }
 
+/* Đoạn text phụ (muted) dùng cho Privacy Policy, Commitment */
 .muted {
   margin: 0 0 10px 18px;
   color: #666;
@@ -102,6 +113,7 @@ hr {
   color: #3f78c9;
 }
 
+/* Nút bấm chuyển hướng sang trang Suggestion (hỗ trợ) */
 .support-btn {
   display: inline-flex;
   align-items: center;
@@ -118,6 +130,7 @@ hr {
   text-decoration: none;
 }
 
+/* Hiệu ứng di chuột vào nút bấm: đổi màu đậm hơn, nẩy lên trên */
 .support-btn:hover {
   background-color: #2b5c8f;
   color: white;
