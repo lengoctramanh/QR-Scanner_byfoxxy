@@ -1,5 +1,8 @@
 import { Clock, Package, Search } from "lucide-react";
 
+// Ham nay dung de tinh thoi gian con lai cua ma QR tren the hien thi.
+// Nhan vao: expiryDate la ngay het han cua ma.
+// Tra ve: chuoi mo ta thoi gian con lai hoac trang thai het han.
 const calculateTimeLeft = (expiryDate) => {
   if (!expiryDate) return "No expiration";
 
@@ -14,6 +17,9 @@ const calculateTimeLeft = (expiryDate) => {
   return `${hours}h ${minutes}m remaining`;
 };
 
+// Ham nay dung de render mot the thong tin lich su quet cua user.
+// Nhan vao: scan la du lieu ma QR, onViewDetails la ham mo chi tiet.
+// Tra ve: JSX card hien thi trang thai ma, san pham va so lan quet.
 export default function ScanCard({ scan, onViewDetails }) {
   const timeLeft = calculateTimeLeft(scan.expiryDate);
   const isExpired = timeLeft === "Expired";

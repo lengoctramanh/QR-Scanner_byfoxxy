@@ -1,10 +1,26 @@
-// src/components/Header.jsx
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { QrCode, Menu } from "lucide-react";
+import { authStorage } from "../utils/authStorage";
 
+// Ham nay dung de render thanh header chung va menu dieu huong cua ung dung.
+// Nhan vao: khong nhan props nao.
+// Tra ve: JSX header co logo va menu dropdown.
 export default function Header() {
   const [open, setOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isDashboardPage = ["/profile", "/brand-profile", "/admin-dashboard"].includes(location.pathname);
+  const showDashboardActions = isDashboardPage && Boolean(authStorage.getToken());
+
+  // Ham nay dung de dang xuat tai khoan hien tai va dua nguoi dung ve trang login.
+  // Nhan vao: khong nhan tham so nao.
+  // Tac dong: xoa du lieu dang nhap trong localStorage, dong menu va dieu huong sang /login.
+  const handleLogout = () => {
+    authStorage.clearAuth();
+    setOpen(false);
+    navigate("/login");
+  };
 
   return (
     <header className="top-bar">
@@ -23,18 +39,20 @@ export default function Header() {
           <Link to="/" onClick={() => setOpen(false)}>
             Home
           </Link>
-          <Link to="/about" onClick={() => setOpen(false)}>
-            About
-          </Link>
-          <Link to="/code" onClick={() => setOpen(false)}>
-            Code
-          </Link>
-          <Link to="/register" onClick={() => setOpen(false)}>
-            Sign up
-          </Link>
-          <Link to="/login" onClick={() => setOpen(false)}>
-            Log in
-          </Link>
+          {showDashboardActions ? (
+            <button type="button" className="dropdown-action-btn" onClick={handleLogout}>
+              Log out
+            </button>
+          ) : (
+            <>
+              <Link to="/register" onClick={() => setOpen(false)}>
+                Sign up
+              </Link>
+              <Link to="/login" onClick={() => setOpen(false)}>
+                Log in
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </header>

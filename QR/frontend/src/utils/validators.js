@@ -1,4 +1,7 @@
-﻿export const validateRegisterData = (data, role) => {
+// Ham nay dung de kiem tra du lieu form dang ky truoc khi gui len backend.
+// Nhan vao: data la object du lieu form, role la vai tro dang ky hien tai.
+// Tra ve: object gom isValid va message de thong bao ket qua kiem tra.
+export const validateRegisterData = (data, role) => {
   const {
     password,
     confirmPassword,

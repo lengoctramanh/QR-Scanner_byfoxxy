@@ -4,6 +4,9 @@ import { requestPasswordResetOtp } from "../services/authService";
 
 const OTP_DURATION_SECONDS = 120;
 
+// Ham nay dung de quan ly luong quen mat khau gom gui OTP, xac minh va dat lai mat khau.
+// Nhan vao: khong nhan tham so nao.
+// Tra ve: state va cac handler de trang ForgotPassword su dung.
 export default function useForgotPassword() {
   const navigate = useNavigate();
 
@@ -25,6 +28,9 @@ export default function useForgotPassword() {
     return () => clearTimeout(timer);
   }, [step, timeLeft]);
 
+  // Ham nay dung de gui yeu cau tao OTP dua tren email hoac so dien thoai.
+  // Nhan vao: event la su kien submit cua buoc dau tien.
+  // Tac dong: goi service forgot password va cap nhat step/message theo ket qua.
   const handleSendOtp = async (event) => {
     event?.preventDefault?.();
 
@@ -51,6 +57,9 @@ export default function useForgotPassword() {
     setMessage(result.message);
   };
 
+  // Ham nay dung de kiem tra ma OTP nguoi dung vua nhap.
+  // Nhan vao: event la su kien submit cua form OTP.
+  // Tac dong: kiem tra do dai OTP va chuyen sang buoc dat lai mat khau neu hop le.
   const handleVerifyOtp = (event) => {
     event.preventDefault();
 
@@ -70,6 +79,9 @@ export default function useForgotPassword() {
     }, 500);
   };
 
+  // Ham nay dung de dat lai mat khau moi sau khi OTP duoc xac minh.
+  // Nhan vao: event la su kien submit cua form dat lai mat khau.
+  // Tac dong: validate mat khau moi, hien thong bao va dieu huong ve login.
   const handleResetPassword = (event) => {
     event.preventDefault();
 

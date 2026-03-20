@@ -14,11 +14,24 @@ const SCAN_GRID_STYLE = {
   gap: "20px",
 };
 
+// Ham nay dung de render thanh thong tin ben trai cua dashboard user.
+// Nhan vao: userInfo la du lieu user, fileInputRef la ref input avatar, onAvatarChange la ham doi anh.
+// Tra ve: JSX sidebar hien avatar va thong tin co ban cua user.
 export function UserDashboardSidebar({ userInfo, fileInputRef, onAvatarChange }) {
+  const defaultAvatar = "../assets/image.png";
+  const displayDob = typeof userInfo.dob === "string" && userInfo.dob.includes("T") ? userInfo.dob.split("T")[0] : userInfo.dob || "Not updated";
+
   return (
     <aside className="user-sidebar">
       <div className="avatar-wrapper">
-        <img src={userInfo.avatar} alt="Avatar" className="avatar-img" />
+        <img
+          src={userInfo.avatar || defaultAvatar}
+          alt="Avatar"
+          className="avatar-img"
+          onError={(event) => {
+            event.currentTarget.src = defaultAvatar;
+          }}
+        />
         <button type="button" className="upload-avatar-btn" onClick={() => fileInputRef.current?.click()}>
           <Camera size={16} />
         </button>
@@ -27,7 +40,6 @@ export function UserDashboardSidebar({ userInfo, fileInputRef, onAvatarChange })
 
       <div className="user-sidebar-info">
         <h3 className="user-name">{userInfo.fullName}</h3>
-        <p className="user-username">@{userInfo.email.split("@")[0]}</p>
 
         <div className="user-info-list">
           <div className="info-item">
@@ -37,7 +49,7 @@ export function UserDashboardSidebar({ userInfo, fileInputRef, onAvatarChange })
             <Phone size={16} className="icon" /> {userInfo.phone}
           </div>
           <div className="info-item">
-            <Calendar size={16} className="icon" /> {userInfo.dob || "Not updated"}
+            <Calendar size={16} className="icon" /> {displayDob}
           </div>
           <div className="info-item">
             <Users size={16} className="icon" />
@@ -49,6 +61,9 @@ export function UserDashboardSidebar({ userInfo, fileInputRef, onAvatarChange })
   );
 }
 
+// Ham nay dung de render noi dung chinh cua dashboard user theo tab dang duoc chon.
+// Nhan vao: activeTab, scanHistoryData, activeScans va cac handler dieu huong/luu thong tin.
+// Tra ve: JSX noi dung tab lich su quet, ma dang hoat dong va form settings.
 export function UserDashboardContent({ activeTab, scanHistoryData, activeScans, onOpenScanDetails, onSaveSettings, onTabChange }) {
   return (
     <section className="dashboard-content">
@@ -82,6 +97,9 @@ export function UserDashboardContent({ activeTab, scanHistoryData, activeScans, 
   );
 }
 
+// Ham nay dung de render modal chi tiet lich su quet cua mot ma duoc chon.
+// Nhan vao: scan la ban ghi dang xem, onClose la ham dong modal.
+// Tra ve: JSX modal hoac null neu khong co ban ghi nao duoc chon.
 export function UserScanDetailsModal({ scan, onClose }) {
   if (!scan) return null;
 

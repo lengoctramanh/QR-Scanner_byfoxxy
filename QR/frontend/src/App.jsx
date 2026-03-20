@@ -2,24 +2,21 @@ import { Route, Routes } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
 import PublicLayout from "./layouts/PublicLayout";
 import AdminDashboard from "./pages/AdminDashboard";
-import AboutPage from "./pages/About";
 import BrandDashboard from "./pages/BrandDashboard";
-import CodePage from "./pages/Code";
 import ForgotPassword from "./pages/ForgotPassword";
 import Home from "./pages/Home";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
-import SuggestionPane from "./pages/Suggestion";
 import UserDashboard from "./pages/UserDashboard";
 
+// Ham nay dung de khai bao toan bo router goc cua frontend.
+// Nhan vao: khong nhan tham so truc tiep, su dung route hien tai tu react-router-dom.
+// Tra ve: cay JSX chua cac route cong khai va dashboard.
 function App() {
   return (
     <Routes>
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
-        <Route path="/code" element={<CodePage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/suggestion" element={<SuggestionPane />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

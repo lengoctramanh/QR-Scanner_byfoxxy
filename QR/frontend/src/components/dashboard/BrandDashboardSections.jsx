@@ -1,5 +1,8 @@
-import { Building, Camera, Eye, EyeOff, FileSpreadsheet, Globe, Mail, MapPin, Package, PlusCircle, Settings, UploadCloud, X } from "lucide-react";
+import { Building, Camera, Eye, EyeOff, FileSpreadsheet, Globe, Mail, MapPin, Package, Phone, PlusCircle, Settings, UploadCloud, X } from "lucide-react";
 import DashboardTabNav from "./DashboardTabNav";
+import defaultAvatar from "../../assets/image.png";
+
+const DEFAULT_BRAND_LOGO = "/pictures/logo/logoDefault.png";
 
 const BRAND_DASHBOARD_TABS = [
   { id: "manage", icon: Package, label: "Manage Products" },
@@ -29,40 +32,76 @@ const TOGGLE_BUTTON_STYLE = {
   color: "#94a3b8",
 };
 
-export function BrandDashboardSidebar({ brandInfo, logoInputRef, onLogoChange }) {
+// Ham nay dung de render sidebar thong tin thuong hieu trong dashboard brand.
+// Nhan vao: brandInfo la du lieu brand, avatarInputRef la ref input avatar, onAvatarChange la ham doi avatar.
+// Tra ve: JSX sidebar hien avatar tai khoan, logo thuong hieu va thong tin lien he cua brand.
+export function BrandDashboardSidebar({ brandInfo, avatarInputRef, onAvatarChange }) {
+  const displayName = brandInfo.fullName || "Pending update";
+  const displayBusinessName = brandInfo.businessName || "Pending update";
+  const displayTaxId = brandInfo.taxId || "Pending update";
+  const displayEmail = brandInfo.email || "Pending update";
+  const displayPhone = brandInfo.phone || "Pending update";
+  const displayAddress = brandInfo.address || "Pending update";
+  const displayWebsite = brandInfo.website || "Pending update";
+
   return (
     <aside className="brand-sidebar">
-      <div className="brand-logo-wrapper">
-        <img src={brandInfo.logo} alt="Brand Logo" className="brand-logo-img" />
-        <button type="button" className="upload-avatar-btn" onClick={() => logoInputRef.current?.click()}>
+      <div className="brand-avatar-wrapper">
+        <img
+          src={brandInfo.avatar || defaultAvatar}
+          alt="Brand Avatar"
+          className="brand-avatar-img"
+          onError={(event) => {
+            event.currentTarget.src = defaultAvatar;
+          }}
+        />
+        <button type="button" className="upload-avatar-btn" onClick={() => avatarInputRef.current?.click()}>
           <Camera size={16} />
         </button>
-        <input type="file" ref={logoInputRef} hidden accept="image/*" onChange={onLogoChange} />
+        <input type="file" ref={avatarInputRef} hidden accept="image/*" onChange={onAvatarChange} />
       </div>
 
       <div className="user-sidebar-info" style={{ width: "100%" }}>
         <h3 className="user-name" style={{ color: "#3f78c9" }}>
-          {brandInfo.fullName}
+          {displayName}
         </h3>
         <h3 className="user-name" style={{ color: "#3f78c9" }}>
-          {brandInfo.businessName}
+          {displayBusinessName}
         </h3>
         <p className="user-username" style={{ textAlign: "center" }}>
-          Tax ID: {brandInfo.taxId}
+          Tax ID: {displayTaxId}
         </p>
+
+        <div className="brand-logo-showcase">
+          <img
+            src={brandInfo.logo || DEFAULT_BRAND_LOGO}
+            alt="Brand Logo"
+            className="brand-logo-img"
+            onError={(event) => {
+              event.currentTarget.src = DEFAULT_BRAND_LOGO;
+            }}
+          />
+        </div>
 
         <div className="user-info-list">
           <div className="info-item">
-            <Mail size={16} className="icon" /> {brandInfo.email}
+            <Mail size={16} className="icon" /> {displayEmail}
           </div>
           <div className="info-item">
-            <MapPin size={16} className="icon" /> {brandInfo.address}
+            <Phone size={16} className="icon" /> {displayPhone}
+          </div>
+          <div className="info-item">
+            <MapPin size={16} className="icon" /> {displayAddress}
           </div>
           <div className="info-item">
             <Globe size={16} className="icon" />{" "}
-            <a href={brandInfo.website} target="_blank" rel="noreferrer" style={{ color: "#475569" }}>
-              {brandInfo.website}
-            </a>
+            {brandInfo.website ? (
+              <a href={brandInfo.website} target="_blank" rel="noreferrer" style={{ color: "#475569" }}>
+                {displayWebsite}
+              </a>
+            ) : (
+              <span>{displayWebsite}</span>
+            )}
           </div>
         </div>
       </div>
@@ -70,6 +109,9 @@ export function BrandDashboardSidebar({ brandInfo, logoInputRef, onLogoChange })
   );
 }
 
+// Ham nay dung de render noi dung chinh cua dashboard brand theo tung tab.
+// Nhan vao: toan bo state va handler duoc hook dashboard brand truyen xuong.
+// Tra ve: JSX noi dung tab quan ly san pham, tao QR va cai dat.
 export function BrandDashboardContent({
   activeTab,
   brandInfo,
@@ -133,6 +175,9 @@ export function BrandDashboardContent({
   );
 }
 
+// Ham nay dung de render tab quan ly san pham cua brand.
+// Nhan vao: khong nhan props nao.
+// Tra ve: JSX thong bao trang thai tab manage products.
 function ManageProductsSection() {
   return (
     <div>
@@ -142,6 +187,9 @@ function ManageProductsSection() {
   );
 }
 
+// Ham nay dung de render tab tao QR thu cong va upload batch Excel.
+// Nhan vao: du lieu form QR, file Excel va cac handler xu ly upload/submit.
+// Tra ve: JSX hai khu vuc tao QR thu cong va dang ky batch.
 function IssueQrSection({
   excelFile,
   excelInputRef,
@@ -288,6 +336,9 @@ function IssueQrSection({
   );
 }
 
+// Ham nay dung de render tab cai dat thong tin brand va doi mat khau.
+// Nhan vao: du lieu brand, du lieu mat khau va cac handler cap nhat/submit.
+// Tra ve: JSX form settings cua brand.
 function SettingsSection({ brandInfo, passwords, showPasswords, onBrandInfoChange, onPasswordChange, onPasswordVisibilityToggle, onSettingsSubmit }) {
   return (
     <form className="settings-form" style={{ maxWidth: "100%" }} onSubmit={onSettingsSubmit}>
@@ -304,9 +355,21 @@ function SettingsSection({ brandInfo, passwords, showPasswords, onBrandInfoChang
             <label>Contact Email</label>
             <input type="email" value={brandInfo.email} onChange={(event) => onBrandInfoChange("email", event.target.value)} style={INPUT_STYLE} />
           </div>
+          <div className="input-group">
+            <label>Phone Number</label>
+            <input type="text" value={brandInfo.phone} onChange={(event) => onBrandInfoChange("phone", event.target.value)} style={INPUT_STYLE} />
+          </div>
           <div className="input-group" style={{ gridColumn: "1 / -1" }}>
             <label>Business Address</label>
             <input type="text" value={brandInfo.address} onChange={(event) => onBrandInfoChange("address", event.target.value)} style={INPUT_STYLE} />
+          </div>
+          <div className="input-group">
+            <label>Website</label>
+            <input type="text" value={brandInfo.website} onChange={(event) => onBrandInfoChange("website", event.target.value)} style={INPUT_STYLE} />
+          </div>
+          <div className="input-group">
+            <label>Tax ID</label>
+            <input type="text" value={brandInfo.taxId} onChange={(event) => onBrandInfoChange("taxId", event.target.value)} style={INPUT_STYLE} />
           </div>
         </div>
       </div>
@@ -328,6 +391,9 @@ function SettingsSection({ brandInfo, passwords, showPasswords, onBrandInfoChang
   );
 }
 
+// Ham nay dung de render mot o nhap mat khau co nut an hien gia tri.
+// Nhan vao: label, value, showValue va cac handler thay doi/hien thi mat khau.
+// Tra ve: JSX field mat khau dung chung trong settings brand.
 function PasswordField({ label, value, showValue, onChange, onToggleVisibility }) {
   return (
     <div className="input-group pw-input-wrap">

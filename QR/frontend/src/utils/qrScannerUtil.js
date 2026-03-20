@@ -1,5 +1,8 @@
 import jsQR from "jsqr";
 
+// Ham nay dung de doc ma QR tu anh nguoi dung tai len.
+// Nhan vao: file la doi tuong anh do nguoi dung chon.
+// Tra ve: Promise resolve ra chuoi du lieu QR hoac reject neu khong doc duoc.
 export const processQrFromImage = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();

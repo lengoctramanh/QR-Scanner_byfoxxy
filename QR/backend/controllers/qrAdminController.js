@@ -2,10 +2,11 @@
 const qrImageBuilder = require("../app/generator/qrImageBuilder");
 
 const qrAdminController = {
-  // API dùng để Admin test việc tạo mã QR 1 (Mã bề mặt)
+  // Ham nay dung de cho admin test tao anh QR tu mot URL tuy chon.
+  // Nhan vao: req.body.customUrl va res de gui ket qua ve frontend.
+  // Tac dong: goi qrImageBuilder de tao anh Base64 va tra JSON phan hoi.
   generateTestQrImage: async (req, res) => {
     try {
-      // Admin sẽ gửi url xuống qua req.body
       const { customUrl } = req.body;
 
       if (!customUrl) {
@@ -15,14 +16,12 @@ const qrAdminController = {
         });
       }
 
-      // Gọi Lõi thuật toán để vẽ ảnh
       const base64Image = await qrImageBuilder.generateBase64(customUrl);
 
-      // Trả hình ảnh về cho Frontend
       return res.status(200).json({
         success: true,
         message: "Tạo ảnh QR thành công",
-        qrImageData: base64Image, // Chuỗi này dài loằng ngoằng bắt đầu bằng "data:image/png;base64,..."
+        qrImageData: base64Image,
       });
     } catch (error) {
       console.error("Controller Error:", error);

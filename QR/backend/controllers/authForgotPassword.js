@@ -1,6 +1,9 @@
 const authService = require("../services/authService");
 
 const authForgotPassword = {
+  // Ham nay dung de xu ly API yeu cau gui OTP dat lai mat khau.
+  // Nhan vao: req chua identifier can khoi phuc va res de gui phan hoi.
+  // Tac dong: goi authService.requestPasswordResetOtp va tra ket qua JSON cho client.
   async requestOtp(req, res) {
     try {
       const result = await authService.requestPasswordResetOtp(req.body?.identifier);

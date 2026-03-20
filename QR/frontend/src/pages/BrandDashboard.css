@@ -31,22 +31,48 @@
   flex-shrink: 0;
 }
 
-/* Vùng chứa Logo thương hiệu */
-.brand-logo-wrapper {
+/* Vung chua avatar tai khoan cua brand o phan dau sidebar. */
+.brand-avatar-wrapper {
   position: relative;
-  width: 140px;
-  height: 140px;
+  width: 108px;
+  height: 108px;
   margin-bottom: 20px;
+}
+
+/* Anh avatar tai khoan duoc hien thi rieng voi logo thuong hieu. */
+.brand-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #eaf1ff;
+  box-shadow: 0 8px 20px rgba(63, 120, 201, 0.2);
+  background: white;
+}
+
+/* Vung logo thuong hieu duoc can giua va tach rieng khoi avatar. */
+.brand-logo-showcase {
+  width: 124px;
+  margin: 12px auto 22px;
+  padding: 10px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f8fbff 0%, #eef4ff 100%);
+  border: 1px solid rgba(63, 120, 201, 0.16);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 124px;
 }
 
 .brand-logo-img {
   width: 100%;
   height: 100%;
-  border-radius: 20px; /* Logo brand thường hình vuông bo góc */
+  border-radius: 20px;
   object-fit: contain;
   border: 4px solid #eaf1ff;
-  box-shadow: 0 8px 20px rgba(63, 120, 201, 0.2);
+  box-shadow: 0 8px 20px rgba(63, 120, 201, 0.14);
   background: white;
+  padding: 12px;
 }
 
 /* Các thẻ cơ bản (Nội dung của từng Tab bên phải) */
@@ -162,7 +188,16 @@ input:checked + .slider:before {
 /* Tái sử dụng các CSS khác từ UserDashboard nếu cần */
 /* Responsive cho màn hình nhỏ: chuyển về dạng 1 cột dọc */
 @media (max-width: 992px) {
+  .brand-sidebar {
+    width: 100%;
+  }
+
   .qr-creation-grid {
     grid-template-columns: 1fr;
+  }
+
+  .brand-logo-showcase {
+    width: 124px;
+    height: 124px;
   }
 }

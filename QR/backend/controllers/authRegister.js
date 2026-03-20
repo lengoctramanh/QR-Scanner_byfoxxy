@@ -2,6 +2,9 @@ const accountService = require("../services/accountService");
 const brandRegistrationRequestService = require("../services/brandRegistrationRequestService");
 
 const authRegister = {
+  // Ham nay dung de xu ly API dang ky cho user hoac brand.
+  // Nhan vao: req chua du lieu form dang ky, file dinh kem va res de gui ket qua.
+  // Tac dong: validate payload, goi service tao user hoac gui yeu cau brand, sau do tra JSON.
   async register(req, res) {
     try {
       const { fullName, emailOrPhone, dob, gender, password, role, brandName, taxId, website, industry, productCategories } = req.body;

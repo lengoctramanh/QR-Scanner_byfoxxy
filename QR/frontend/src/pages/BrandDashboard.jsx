@@ -3,22 +3,25 @@ import useBrandDashboard from "../hooks/useBrandDashboard";
 import "./BrandDashboard.css";
 import "./UserDashboard.css";
 
+// Ham nay dung de render dashboard cua brand va truyen logic tu hook vao cac khu vuc quan tri.
+// Nhan vao: khong nhan props, su dung state/handler tu useBrandDashboard.
+// Tra ve: giao dien dashboard brand cho thong tin, QR va cai dat.
 export default function BrandDashboard() {
   const {
     activeTab,
+    avatarInputRef,
     brandInfo,
     excelFile,
     excelInputRef,
+    handleAvatarChange,
     handleExcelChange,
     handleExcelDragLeave,
     handleExcelDragOver,
     handleExcelDrop,
     handleExcelSubmit,
-    handleLogoChange,
     handleManualQrSubmit,
     handleSettingsSubmit,
     isDragging,
-    logoInputRef,
     passwords,
     qrForm,
     setActiveTab,
@@ -34,7 +37,7 @@ export default function BrandDashboard() {
   return (
     <main className="dashboard-main">
       <div className="dashboard-layout">
-        <BrandDashboardSidebar brandInfo={brandInfo} logoInputRef={logoInputRef} onLogoChange={handleLogoChange} />
+        <BrandDashboardSidebar brandInfo={brandInfo} avatarInputRef={avatarInputRef} onAvatarChange={handleAvatarChange} />
         <BrandDashboardContent
           activeTab={activeTab}
           brandInfo={brandInfo}

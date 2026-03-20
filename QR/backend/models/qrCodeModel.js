@@ -1,5 +1,8 @@
 const db = require("../config/database");
 
+// Ham nay dung de chon executor phu hop cho query QR, uu tien transaction neu co.
+// Nhan vao: executor la connection/query executor tuy chon.
+// Tra ve: executor se duoc dung de thuc thi SQL.
 const getExecutor = (executor) => executor || db;
 
 const baseOverviewQuery = `
@@ -34,6 +37,9 @@ const baseOverviewQuery = `
 `;
 
 const qrCodeModel = {
+  // Ham nay dung de lay du lieu tong hop cua QR theo public token.
+  // Nhan vao: publicToken la ma cong khai can tim, options co the chua executor va forUpdate.
+  // Tra ve: ban ghi overview cua QR hoac null neu khong tim thay trong DB.
   async findOverviewByPublicToken(publicToken, options = {}) {
     try {
       const executor = getExecutor(options.executor);

@@ -1,17 +1,10 @@
 import { Briefcase, UploadCloud } from "lucide-react";
 import FileUploadZone from "../common/FileUploadZone";
 
-export default function RegisterBrandSection({
-  formData,
-  fileInputRef,
-  isDragging,
-  onChange,
-  onDragOver,
-  onDragLeave,
-  onDrop,
-  onFileChange,
-  onRemoveFile,
-}) {
+// Ham nay dung de render nhom truong thong tin rieng cho tai khoan brand.
+// Nhan vao: formData, ref input file va cac handler lien quan den upload va thay doi du lieu.
+// Tra ve: JSX phan thong tin thuong hieu va tai lieu xac minh.
+export default function RegisterBrandSection({ formData, fileInputRef, isDragging, onChange, onDragOver, onDragLeave, onDrop, onFileChange, onRemoveFile }) {
   return (
     <div className="form-section fade-in">
       <h4 className="section-heading">

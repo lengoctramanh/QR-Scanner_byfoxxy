@@ -1,148 +1,53 @@
-import { useState } from "react";
-import { Activity, BadgeCheck, Check, CheckSquare, Clock3, Eye, FileWarning, Layers3, ListTodo, LogOut, MonitorSmartphone, ShieldAlert, TriangleAlert, Users, Waypoints, X } from "lucide-react";
-import { DetailModal, EmptyState, StatCard, StatusPill } from "../components/admin/AdminDashboardShared";
-import { ADMIN_PROFILE, BRAND_PRIORITY, INITIAL_ACTIVE_SESSIONS, INITIAL_APPROVAL_REQUESTS, INITIAL_BRAND_PENDING_REVIEWS, INITIAL_QR_CODE_REQUESTS, INITIAL_QR_OVERVIEW, TAB_ITEMS } from "../data/adminDashboardData";
-import useAuthCheck from "../hooks/useAuthCheck";
-import { describeMinutesRemaining, formatDateTime, maskToken } from "../utils/adminDashboardUtils";
+import { CheckSquare, Eye, Layers3, ListTodo, LogOut, MonitorSmartphone, ShieldAlert, TriangleAlert, Users, Waypoints } from "lucide-react";
+import AdminBrandRequestModal from "../components/admin/AdminBrandRequestModal";
+import AdminBrandReviewPanel from "../components/admin/AdminBrandReviewPanel";
+import { DetailModal, StatCard, StatusPill } from "../components/admin/AdminDashboardShared";
+import defaultAvatar from "../assets/image.png";
+import { TAB_ITEMS } from "../data/adminDashboardData";
+import useAdminDashboard from "../hooks/useAdminDashboard";
+import { describeMinutesRemaining, formatDateTime, formatGenderLabel, maskToken } from "../utils/adminDashboardUtils";
 import "./AdminDashboard.css";
 import "./UserDashboard.css";
 
+// Ham nay dung de render bang dieu khien admin va ket noi giao dien voi hook du lieu live cho brand reviews.
+// Nhan vao: khong nhan props, du lieu duoc lay tu useAdminDashboard.
+// Tra ve: giao dien dashboard admin voi tab review live va cac khu vuc giam sat.
 export default function AdminDashboard() {
-  useAuthCheck("admin");
+  const {
+    activeAdminSessions,
+    activeBrandActionId,
+    activeSessions,
+    activeTab,
+    activityBanner,
+    adminProfile,
+    approvalRequests,
+    closeBrandReview,
+    filteredQrRows,
+    handleApprovalDecision,
+    handleApproveBrandRequest,
+    handleQrRequestDecision,
+    handleRejectBrandRequest,
+    handleRevokeSession,
+    isBrandDetailLoading,
+    isBrandQueueLoading,
+    openBrandReview,
+    pendingApprovalCount,
+    qrCodeRequests,
+    qrFilter,
+    qrOverviewRows,
+    selectedBrandRequestDetail,
+    selectedRequest,
+    setActiveTab,
+    setQrFilter,
+    setSelectedRequest,
+    sortedBrandRequests,
+    suspiciousQrCount,
+    totalPublicScans,
+  } = useAdminDashboard();
 
-  const [activeTab, setActiveTab] = useState("brands");
-  const [selectedBrand, setSelectedBrand] = useState(null);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [qrFilter, setQrFilter] = useState("ALL");
-  const [brandPendingReviews, setBrandPendingReviews] = useState(INITIAL_BRAND_PENDING_REVIEWS);
-  const [approvalRequests, setApprovalRequests] = useState(INITIAL_APPROVAL_REQUESTS);
-  const [qrCodeRequests, setQrCodeRequests] = useState(INITIAL_QR_CODE_REQUESTS);
-  const [qrOverviewRows] = useState(INITIAL_QR_OVERVIEW);
-  const [activeSessions, setActiveSessions] = useState(INITIAL_ACTIVE_SESSIONS);
-  const [activityBanner, setActivityBanner] = useState("The admin console is currently displaying mock data aligned with the active MySQL views and is ready to be connected to live APIs.");
-
-  const sortedBrands = [...brandPendingReviews].sort((left, right) => (BRAND_PRIORITY[left.verification_status] ?? 99) - (BRAND_PRIORITY[right.verification_status] ?? 99) || new Date(left.account_registered_at) - new Date(right.account_registered_at));
-  const filteredQrRows = qrFilter === "ALL" ? qrOverviewRows : qrOverviewRows.filter((item) => item.status === qrFilter);
-  const suspiciousQrCount = qrOverviewRows.filter((item) => item.status === "SUSPICIOUS").length;
-  const pendingApprovalCount = approvalRequests.filter((item) => item.status === "PENDING").length + qrCodeRequests.filter((item) => item.status === "PENDING" || item.status === "PROCESSING").length;
-  const activeAdminSessions = activeSessions.filter((item) => item.role === "admin").length;
-  const totalPublicScans = qrOverviewRows.reduce((total, item) => total + item.total_public_scans, 0);
-
-  const handleBrandDecision = (brandId, nextStatus) => {
-    setBrandPendingReviews((currentRows) => currentRows.filter((row) => row.brand_id !== brandId));
-    setActivityBanner(
-      nextStatus === "APPROVED"
-        ? `Brand registration ${brandId} was approved and removed from the review queue.`
-        : `Brand registration ${brandId} was rejected and sent back for resubmission.`,
-    );
-  };
-
-  const handleApprovalDecision = (approvalId, nextStatus) => {
-    setApprovalRequests((currentRows) =>
-      currentRows.map((row) =>
-        row.approval_id === approvalId
-          ? {
-              ...row,
-              status: nextStatus,
-              confirmed_at: new Date().toISOString(),
-              rejection_reason: nextStatus === "REJECTED" ? "Mock reason: the proposed change does not have enough supporting evidence yet." : null,
-            }
-          : row,
-      ),
-    );
-    setActivityBanner(`Approval request ${approvalId} moved to ${nextStatus}.`);
-  };
-
-  const handleQrRequestDecision = (requestId, nextStatus) => {
-    setQrCodeRequests((currentRows) =>
-      currentRows.map((row) =>
-        row.request_id === requestId
-          ? {
-              ...row,
-              status: nextStatus,
-              processed_at: new Date().toISOString(),
-              admin_note: nextStatus === "REJECTED" ? "Mock note: the import file does not match the template format yet." : "Mock note: the admin team accepted and is processing this request.",
-            }
-          : row,
-      ),
-    );
-    setActivityBanner(`QR request ${requestId} moved to ${nextStatus}.`);
-  };
-
-  const handleRevokeSession = (sessionId) => {
-    setActiveSessions((currentRows) => currentRows.filter((row) => row.session_id !== sessionId));
-    setActivityBanner(`Session ${sessionId} was revoked.`);
-  };
-
-  const renderBrandTab = () => (
-    <section className="admin-panel-card">
-      <div className="admin-panel-heading">
-        <div>
-          <span className="admin-kicker">Priority Queue</span>
-          <h3>Review brand registration packages</h3>
-        </div>
-        <div className="admin-heading-badge">
-          <ShieldAlert size={16} /> RESUBMITTED first
-        </div>
-      </div>
-
-      {sortedBrands.length === 0 ? (
-        <EmptyState icon={BadgeCheck} title="No registrations waiting for review" description="The brand review queue is currently clear." />
-      ) : (
-        <div className="admin-table-shell">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Brand</th>
-                <th>Status</th>
-                <th>Contact</th>
-                <th>Last update</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedBrands.map((brand) => (
-                <tr key={brand.brand_id} className={brand.verification_status === "RESUBMITTED" ? "admin-priority-row" : ""}>
-                  <td>
-                    <div className="admin-cell-title">{brand.brand_name}</div>
-                    <div className="admin-cell-subtitle">
-                      {brand.industry} / {brand.tax_id}
-                    </div>
-                    <div className="admin-cell-meta">{brand.website}</div>
-                  </td>
-                  <td>
-                    <StatusPill value={brand.verification_status} />
-                  </td>
-                  <td>
-                    <div className="admin-cell-title">{brand.contact_email}</div>
-                    <div className="admin-cell-subtitle">{brand.contact_phone}</div>
-                  </td>
-                  <td>
-                    <div className="admin-cell-title">{brand.last_action}</div>
-                    <div className="admin-cell-subtitle">{formatDateTime(brand.last_action_at)}</div>
-                  </td>
-                  <td>
-                    <div className="admin-action-row">
-                      <button type="button" className="admin-action-btn ghost" onClick={() => setSelectedBrand(brand)}>
-                        <Eye size={16} /> Review
-                      </button>
-                      <button type="button" className="admin-action-btn success" onClick={() => handleBrandDecision(brand.brand_id, "APPROVED")}>
-                        <Check size={16} /> Approve
-                      </button>
-                      <button type="button" className="admin-action-btn danger" onClick={() => handleBrandDecision(brand.brand_id, "REJECTED")}>
-                        <X size={16} /> Reject
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </section>
-  );
-
+  // Ham nay dung de render tab tong hop cac approval request va QR issuance request.
+  // Nhan vao: khong nhan tham so, doc du lieu mock tu hook admin.
+  // Tra ve: JSX chua hai bang request de admin theo doi.
   const renderRequestTab = () => (
     <div className="admin-tab-stack">
       <section className="admin-panel-card">
@@ -165,36 +70,36 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {approvalRequests.map((request) => (
-                <tr key={request.approval_id}>
+              {approvalRequests.map((requestRow) => (
+                <tr key={requestRow.approval_id}>
                   <td>
-                    <div className="admin-cell-title">{request.approval_id}</div>
-                    <div className="admin-cell-subtitle">{formatDateTime(request.created_at)}</div>
+                    <div className="admin-cell-title">{requestRow.approval_id}</div>
+                    <div className="admin-cell-subtitle">{formatDateTime(requestRow.created_at)}</div>
                   </td>
                   <td>
-                    <div className="admin-cell-title">{request.initiated_by_display}</div>
-                    <div className="admin-cell-subtitle">{request.initiated_role}</div>
+                    <div className="admin-cell-title">{requestRow.initiated_by_display}</div>
+                    <div className="admin-cell-subtitle">{requestRow.initiated_role}</div>
                   </td>
                   <td>
-                    <div className="admin-cell-title">{request.target_table}</div>
-                    <div className="admin-cell-subtitle">{request.target_id}</div>
+                    <div className="admin-cell-title">{requestRow.target_table}</div>
+                    <div className="admin-cell-subtitle">{requestRow.target_id}</div>
                   </td>
                   <td>
-                    <div className="admin-clamp-text">{request.change_reason}</div>
+                    <div className="admin-clamp-text">{requestRow.change_reason}</div>
                   </td>
                   <td>
-                    <StatusPill value={request.status} />
+                    <StatusPill value={requestRow.status} />
                   </td>
                   <td>
                     <div className="admin-action-row">
-                      <button type="button" className="admin-action-btn ghost" onClick={() => setSelectedRequest({ type: "approval", data: request })}>
+                      <button type="button" className="admin-action-btn ghost" onClick={() => setSelectedRequest({ type: "approval", data: requestRow })}>
                         <Eye size={16} /> Details
                       </button>
-                      <button type="button" className="admin-action-btn success" onClick={() => handleApprovalDecision(request.approval_id, "APPROVED")}>
-                        <Check size={16} /> Approve
+                      <button type="button" className="admin-action-btn success" onClick={() => handleApprovalDecision(requestRow.approval_id, "APPROVED")}>
+                        Approve
                       </button>
-                      <button type="button" className="admin-action-btn danger" onClick={() => handleApprovalDecision(request.approval_id, "REJECTED")}>
-                        <X size={16} /> Reject
+                      <button type="button" className="admin-action-btn danger" onClick={() => handleApprovalDecision(requestRow.approval_id, "REJECTED")}>
+                        Reject
                       </button>
                     </div>
                   </td>
@@ -225,38 +130,38 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {qrCodeRequests.map((request) => (
-                <tr key={request.request_id}>
+              {qrCodeRequests.map((requestRow) => (
+                <tr key={requestRow.request_id}>
                   <td>
-                    <div className="admin-cell-title">{request.request_id}</div>
-                    <div className="admin-cell-subtitle">{formatDateTime(request.created_at)}</div>
+                    <div className="admin-cell-title">{requestRow.request_id}</div>
+                    <div className="admin-cell-subtitle">{formatDateTime(requestRow.created_at)}</div>
                   </td>
                   <td>
-                    <div className="admin-cell-title">{request.brand_name}</div>
+                    <div className="admin-cell-title">{requestRow.brand_name}</div>
                     <div className="admin-cell-subtitle">
-                      {request.product_name} / {request.batch_code}
+                      {requestRow.product_name} / {requestRow.batch_code}
                     </div>
                   </td>
                   <td>
-                    <div className="admin-cell-title">{request.requested_quantity.toLocaleString("en-US")} codes</div>
-                    <div className="admin-cell-subtitle">{request.product_id}</div>
+                    <div className="admin-cell-title">{requestRow.requested_quantity.toLocaleString("en-US")} codes</div>
+                    <div className="admin-cell-subtitle">{requestRow.product_id}</div>
                   </td>
                   <td>
-                    <StatusPill value={request.generation_method} />
+                    <StatusPill value={requestRow.generation_method} />
                   </td>
                   <td>
-                    <StatusPill value={request.status} />
+                    <StatusPill value={requestRow.status} />
                   </td>
                   <td>
                     <div className="admin-action-row">
-                      <button type="button" className="admin-action-btn ghost" onClick={() => setSelectedRequest({ type: "qr-request", data: request })}>
+                      <button type="button" className="admin-action-btn ghost" onClick={() => setSelectedRequest({ type: "qr-request", data: requestRow })}>
                         <Eye size={16} /> Details
                       </button>
-                      <button type="button" className="admin-action-btn success" onClick={() => handleQrRequestDecision(request.request_id, "APPROVED")}>
-                        <Check size={16} /> Approve
+                      <button type="button" className="admin-action-btn success" onClick={() => handleQrRequestDecision(requestRow.request_id, "APPROVED")}>
+                        Approve
                       </button>
-                      <button type="button" className="admin-action-btn danger" onClick={() => handleQrRequestDecision(request.request_id, "REJECTED")}>
-                        <X size={16} /> Reject
+                      <button type="button" className="admin-action-btn danger" onClick={() => handleQrRequestDecision(requestRow.request_id, "REJECTED")}>
+                        Reject
                       </button>
                     </div>
                   </td>
@@ -269,6 +174,9 @@ export default function AdminDashboard() {
     </div>
   );
 
+  // Ham nay dung de render tab giam sat tong quan QR theo bo loc trang thai.
+  // Nhan vao: khong nhan tham so, doc qrFilter va filteredQrRows tu hook.
+  // Tra ve: JSX hien thi thong ke va bang overview cua QR.
   const renderQrMonitoringTab = () => (
     <section className="admin-panel-card">
       <div className="admin-panel-heading">
@@ -277,9 +185,9 @@ export default function AdminDashboard() {
           <h3>Monitor the QR overview dataset</h3>
         </div>
         <div className="admin-filter-row">
-          {["ALL", "SUSPICIOUS", "NEW", "ACTIVATED", "BLOCKED"].map((item) => (
-            <button key={item} type="button" className={`admin-filter-chip ${qrFilter === item ? "active" : ""}`} onClick={() => setQrFilter(item)}>
-              {item}
+          {["ALL", "SUSPICIOUS", "NEW", "ACTIVATED", "BLOCKED"].map((filterValue) => (
+            <button key={filterValue} type="button" className={`admin-filter-chip ${qrFilter === filterValue ? "active" : ""}`} onClick={() => setQrFilter(filterValue)}>
+              {filterValue}
             </button>
           ))}
         </div>
@@ -287,8 +195,8 @@ export default function AdminDashboard() {
 
       <div className="admin-mini-stats">
         <StatCard icon={TriangleAlert} title="Suspicious QR" value={suspiciousQrCount} detail="Repeated public scans that should be investigated first" tone="danger" />
-        <StatCard icon={Waypoints} title="Total public scans" value={totalPublicScans} detail="Combined public scan count across the mock overview" tone="info" />
-        <StatCard icon={BadgeCheck} title="Activated" value={qrOverviewRows.filter((item) => item.status === "ACTIVATED").length} detail="Codes that completed activation successfully" tone="success" />
+        <StatCard icon={Waypoints} title="Total public scans" value={totalPublicScans} detail="Combined public scan count across the current overview" tone="info" />
+        <StatCard icon={CheckSquare} title="Activated" value={qrOverviewRows.filter((item) => item.status === "ACTIVATED").length} detail="Codes that completed activation successfully" tone="success" />
       </div>
 
       <div className="admin-table-shell">
@@ -303,26 +211,26 @@ export default function AdminDashboard() {
             </tr>
           </thead>
           <tbody>
-            {filteredQrRows.map((qr) => (
-              <tr key={qr.qr_id}>
+            {filteredQrRows.map((qrRow) => (
+              <tr key={qrRow.qr_id}>
                 <td>
-                  <div className="admin-cell-title">{maskToken(qr.qr_public_token)}</div>
-                  <div className="admin-cell-subtitle">{qr.source}</div>
+                  <div className="admin-cell-title">{maskToken(qrRow.qr_public_token)}</div>
+                  <div className="admin-cell-subtitle">{qrRow.source}</div>
                 </td>
                 <td>
-                  <StatusPill value={qr.status} />
+                  <StatusPill value={qrRow.status} />
                 </td>
                 <td>
-                  <div className="admin-cell-title">{qr.product_id}</div>
-                  <div className="admin-cell-subtitle">{qr.batch_id}</div>
+                  <div className="admin-cell-title">{qrRow.product_id}</div>
+                  <div className="admin-cell-subtitle">{qrRow.batch_id}</div>
                 </td>
                 <td>
-                  <div className="admin-cell-title">{qr.total_public_scans} public scans</div>
-                  <div className="admin-cell-subtitle">{qr.total_pin_attempts} pin attempts</div>
+                  <div className="admin-cell-title">{qrRow.total_public_scans} public scans</div>
+                  <div className="admin-cell-subtitle">{qrRow.total_pin_attempts} pin attempts</div>
                 </td>
                 <td>
-                  <div className="admin-cell-title">Created: {formatDateTime(qr.created_at)}</div>
-                  <div className="admin-cell-subtitle">Activated: {formatDateTime(qr.activated_at)}</div>
+                  <div className="admin-cell-title">Created: {formatDateTime(qrRow.created_at)}</div>
+                  <div className="admin-cell-subtitle">Activated: {formatDateTime(qrRow.activated_at)}</div>
                 </td>
               </tr>
             ))}
@@ -332,6 +240,9 @@ export default function AdminDashboard() {
     </section>
   );
 
+  // Ham nay dung de render tab theo doi session dang hoat dong trong he thong.
+  // Nhan vao: khong nhan tham so, doc activeSessions va cac so lieu tinh san.
+  // Tra ve: JSX cua bang session va cac the thong ke he thong.
   const renderSystemTab = () => (
     <section className="admin-panel-card">
       <div className="admin-panel-heading">
@@ -360,30 +271,30 @@ export default function AdminDashboard() {
             </tr>
           </thead>
           <tbody>
-            {activeSessions.map((session) => (
-              <tr key={session.session_id}>
+            {activeSessions.map((sessionRow) => (
+              <tr key={sessionRow.session_id}>
                 <td>
-                  <div className="admin-cell-title">{session.email}</div>
-                  <div className="admin-cell-subtitle">{session.role}</div>
+                  <div className="admin-cell-title">{sessionRow.email}</div>
+                  <div className="admin-cell-subtitle">{sessionRow.role}</div>
                 </td>
                 <td>
-                  <div className="admin-cell-title">{session.device_info}</div>
-                  <div className="admin-cell-subtitle">{session.device_type}</div>
+                  <div className="admin-cell-title">{sessionRow.device_info}</div>
+                  <div className="admin-cell-subtitle">{sessionRow.device_type}</div>
                 </td>
                 <td>
-                  <div className="admin-cell-title">{session.location_at_login}</div>
-                  <div className="admin-cell-subtitle">{session.ip_at_login}</div>
+                  <div className="admin-cell-title">{sessionRow.location_at_login}</div>
+                  <div className="admin-cell-subtitle">{sessionRow.ip_at_login}</div>
                 </td>
                 <td>
-                  <div className="admin-cell-title">{formatDateTime(session.last_active_at)}</div>
-                  <div className="admin-cell-subtitle">{formatDateTime(session.session_created)}</div>
+                  <div className="admin-cell-title">{formatDateTime(sessionRow.last_active_at)}</div>
+                  <div className="admin-cell-subtitle">{formatDateTime(sessionRow.session_created)}</div>
                 </td>
                 <td>
-                  <div className="admin-cell-title">{formatDateTime(session.expires_at)}</div>
-                  <div className="admin-cell-subtitle">{describeMinutesRemaining(session.minutes_until_expire)}</div>
+                  <div className="admin-cell-title">{formatDateTime(sessionRow.expires_at)}</div>
+                  <div className="admin-cell-subtitle">{describeMinutesRemaining(sessionRow.minutes_until_expire)}</div>
                 </td>
                 <td>
-                  <button type="button" className="admin-action-btn danger" onClick={() => handleRevokeSession(session.session_id)}>
+                  <button type="button" className="admin-action-btn danger" onClick={() => handleRevokeSession(sessionRow.session_id)}>
                     <LogOut size={16} /> Revoke
                   </button>
                 </td>
@@ -395,6 +306,9 @@ export default function AdminDashboard() {
     </section>
   );
 
+  // Ham nay dung de chon tab admin dang hoat dong va tra ve giao dien phu hop.
+  // Nhan vao: khong nhan tham so, dua vao gia tri activeTab tu hook.
+  // Tra ve: JSX cua tab hien tai tren dashboard admin.
   const renderActiveTab = () => {
     switch (activeTab) {
       case "requests":
@@ -405,9 +319,20 @@ export default function AdminDashboard() {
         return renderSystemTab();
       case "brands":
       default:
-        return renderBrandTab();
+        return (
+          <AdminBrandReviewPanel
+            rows={sortedBrandRequests}
+            isLoading={isBrandQueueLoading}
+            activeActionRequestId={activeBrandActionId}
+            onReview={openBrandReview}
+            onApprove={handleApproveBrandRequest}
+            onReject={handleRejectBrandRequest}
+          />
+        );
     }
   };
+
+  const sidebarAvatar = adminProfile.avatarUrl || defaultAvatar;
 
   return (
     <main className="dashboard-main admin-dashboard">
@@ -415,29 +340,36 @@ export default function AdminDashboard() {
         <aside className="admin-sidebar">
           <div className="admin-sidebar-top">
             <div className="admin-avatar-wrap">
-              <img src={ADMIN_PROFILE.avatar} alt={ADMIN_PROFILE.fullName} className="admin-avatar" />
-              <span className="admin-role-badge">{ADMIN_PROFILE.role}</span>
+              <img
+                src={sidebarAvatar}
+                alt={adminProfile.fullName}
+                className="admin-avatar"
+                onError={(event) => {
+                  event.currentTarget.src = defaultAvatar;
+                }}
+              />
+              <span className="admin-role-badge">{adminProfile.role === "admin" ? "Admin" : adminProfile.role}</span>
             </div>
-            <h2>{ADMIN_PROFILE.fullName}</h2>
-            <p>{ADMIN_PROFILE.email}</p>
+            <h2>{adminProfile.fullName}</h2>
+            <p>{adminProfile.email || "No email available"}</p>
           </div>
 
           <div className="admin-sidebar-block">
             <span className="admin-kicker">Control Room</span>
             <div className="admin-sidebar-item">
-              <Clock3 size={16} /> {ADMIN_PROFILE.shift}
-            </div>
-            <div className="admin-sidebar-item">
               <ShieldAlert size={16} /> High privilege account
             </div>
             <div className="admin-sidebar-item">
-              <Layers3 size={16} /> Schema target: ScriptDB2.sql
+              <Users size={16} /> Gender: {formatGenderLabel(adminProfile.gender)}
+            </div>
+            <div className="admin-sidebar-item">
+              <Layers3 size={16} /> Last sign-in: {formatDateTime(adminProfile.lastLoginAt)}
             </div>
           </div>
 
           <div className="admin-sidebar-grid">
             <div className="admin-side-metric">
-              <span>{brandPendingReviews.length}</span>
+              <span>{sortedBrandRequests.length}</span>
               <small>Brand queue</small>
             </div>
             <div className="admin-side-metric">
@@ -460,27 +392,23 @@ export default function AdminDashboard() {
             <div>
               <span className="admin-kicker">Admin Command Center</span>
               <h1>Control approvals, QR risk, and active system sessions</h1>
-              <p>This page uses mock data that closely maps to the current MySQL views so the workflow can be reviewed before live axios integration.</p>
-            </div>
-            <div className="admin-hero-alert">
-              <FileWarning size={18} />
-              <span>{activityBanner}</span>
+              <p>{activityBanner}</p>
             </div>
           </div>
 
           <div className="admin-overview-grid">
-            <StatCard icon={CheckSquare} title="Brands to review" value={brandPendingReviews.length} detail="Source: v_admin_brand_pending_review" tone="warning" />
+            <StatCard icon={CheckSquare} title="Brands to review" value={sortedBrandRequests.length} detail="Live queue from brand_registration_requests" tone="warning" />
             <StatCard icon={ListTodo} title="Open requests" value={pendingApprovalCount} detail="approval_requests + qr_code_requests" tone="info" />
-            <StatCard icon={TriangleAlert} title="QR alerts" value={suspiciousQrCount} detail="v_admin_qr_overview highlights suspicious codes" tone="danger" />
-            <StatCard icon={Users} title="Active sessions" value={activeSessions.length} detail="Source: v_active_sessions" tone="neutral" />
+            <StatCard icon={TriangleAlert} title="QR alerts" value={suspiciousQrCount} detail="Current suspicious QR overview" tone="danger" />
+            <StatCard icon={Users} title="Active sessions" value={activeSessions.length} detail="Current active session snapshot" tone="neutral" />
           </div>
 
           <div className="tab-nav admin-tab-nav">
-            {TAB_ITEMS.map((tab) => {
-              const Icon = tab.icon;
+            {TAB_ITEMS.map((tabItem) => {
+              const Icon = tabItem.icon;
               return (
-                <button key={tab.key} type="button" className={`tab-btn ${activeTab === tab.key ? "active" : ""}`} onClick={() => setActiveTab(tab.key)}>
-                  <Icon size={18} /> {tab.label}
+                <button key={tabItem.key} type="button" className={`tab-btn ${activeTab === tabItem.key ? "active" : ""}`} onClick={() => setActiveTab(tabItem.key)}>
+                  <Icon size={18} /> {tabItem.label}
                 </button>
               );
             })}
@@ -490,32 +418,14 @@ export default function AdminDashboard() {
         </section>
       </div>
 
-      {selectedBrand ? (
-        <DetailModal title={selectedBrand.brand_name} subtitle={`${selectedBrand.verification_status} / ${selectedBrand.brand_id}`} onClose={() => setSelectedBrand(null)}>
-          <div className="admin-detail-grid">
-            <div className="admin-detail-card">
-              <span>Industry</span>
-              <strong>{selectedBrand.industry}</strong>
-            </div>
-            <div className="admin-detail-card">
-              <span>Tax ID</span>
-              <strong>{selectedBrand.tax_id}</strong>
-            </div>
-            <div className="admin-detail-card">
-              <span>Website</span>
-              <strong>{selectedBrand.website}</strong>
-            </div>
-            <div className="admin-detail-card">
-              <span>Registered</span>
-              <strong>{formatDateTime(selectedBrand.account_registered_at)}</strong>
-            </div>
-          </div>
-          <div className="admin-detail-note">
-            <h4>Latest review note</h4>
-            <p>{selectedBrand.last_note}</p>
-          </div>
-        </DetailModal>
-      ) : null}
+      <AdminBrandRequestModal
+        requestDetail={selectedBrandRequestDetail}
+        isLoading={isBrandDetailLoading}
+        activeActionRequestId={activeBrandActionId}
+        onClose={closeBrandReview}
+        onApprove={handleApproveBrandRequest}
+        onReject={handleRejectBrandRequest}
+      />
 
       {selectedRequest ? (
         <DetailModal title={selectedRequest.type === "approval" ? selectedRequest.data.approval_id : selectedRequest.data.request_id} subtitle={selectedRequest.type === "approval" ? "Approval Request Snapshot" : "QR Code Request Snapshot"} onClose={() => setSelectedRequest(null)}>

@@ -1,5 +1,8 @@
 import { Paperclip, UploadCloud, X } from "lucide-react";
 
+// Ham nay dung de render khu vuc upload file dung chung cho cac form.
+// Nhan vao: props mo ta label, danh sach file, ref input va cac handler upload.
+// Tra ve: JSX vung upload file va danh sach tep da chon.
 export default function FileUploadZone({
   label,
   helperText,

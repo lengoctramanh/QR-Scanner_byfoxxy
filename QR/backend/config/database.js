@@ -13,8 +13,9 @@ const pool = mysql.createPool({
 
 const promisePool = pool.promise();
 
-// kiem tra ket noi
-
+// Ham nay dung de thu mot truy van nho luc khoi dong de xac nhan ket noi MySQL san sang.
+// Nhan vao: khong nhan tham so, su dung promisePool da duoc khoi tao.
+// Tac dong: ghi log ket noi thanh cong hoac that bai ra console.
 promisePool
   .query("SELECT 1 + 1 AS solution")
   .then(() => {

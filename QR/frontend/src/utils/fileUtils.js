@@ -1,3 +1,6 @@
+// Ham nay dung de loc va them danh sach file hop le vao form dang ky.
+// Nhan vao: filesArray la mang file nguoi dung chon, setFormData la ham cap nhat state, fileInputRef la ref cua o input file.
+// Tac dong: cap nhat truong attachments trong form va reset gia tri input file.
 export const processFiles = (filesArray, setFormData, fileInputRef) => {
   if (filesArray.length === 0) return;
 
@@ -30,6 +33,9 @@ export const processFiles = (filesArray, setFormData, fileInputRef) => {
   }
 };
 
+// Ham nay dung de xoa mot file khoi danh sach attachments cua form.
+// Nhan vao: indexToRemove la vi tri file can xoa, setFormData la ham cap nhat state.
+// Tac dong: tao lai mang attachments moi khong con file duoc chon.
 export const removeFile = (indexToRemove, setFormData) => {
   setFormData((prev) => ({
     ...prev,

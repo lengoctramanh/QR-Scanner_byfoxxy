@@ -1,21 +1,18 @@
 const QRCode = require("qrcode");
 
 const qrImageBuilder = {
-  /**
-   * Nhận vào một URL bất kỳ và trả về hình ảnh QR code dưới dạng Base64
-   * @param {string} dynamicUrl - Đường link do Admin nhập vào
-   * @returns {Promise<string>} - Chuỗi Base64 của ảnh QR
-   */
+  // Ham nay dung de tao anh QR dang Base64 tu mot URL bat ky.
+  // Nhan vao: dynamicUrl la duong dan can ma hoa thanh QR.
+  // Tra ve: Promise tra ve chuoi data URL Base64 cua anh QR.
   generateBase64: async (dynamicUrl) => {
     try {
-      // Cấu hình mã QR: Mức sửa lỗi cao nhất (H), viền nhỏ, kích thước 300x300
       const qrImageBase64 = await QRCode.toDataURL(dynamicUrl, {
         errorCorrectionLevel: "H",
         margin: 2,
         width: 300,
         color: {
-          dark: "#1e293b", // Màu của mã QR (đang để màu xanh đen cho đẹp)
-          light: "#ffffff", // Màu nền
+          dark: "#1e293b",
+          light: "#ffffff",
         },
       });
 

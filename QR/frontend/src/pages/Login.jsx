@@ -1,48 +1,31 @@
-import { useEffect, useState } from "react";
-import { AlertCircle, ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Mail, QrCode, Smartphone } from "lucide-react";
+import { useState } from "react";
+import { AlertCircle, ArrowRight, CheckCircle2, Eye, EyeOff, Lock, Mail } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { submitLogin } from "../services/authService";
 import { authStorage } from "../utils/authStorage";
 import { resolveAuthRedirectPath } from "../utils/authRoutes";
 import "./Login.css";
 
-const welcomeTexts = ["manage your brand & products.", "track your orders & history.", "connect with global partners."];
-
+// Ham nay dung de render trang dang nhap va xu ly luong sign in cua nguoi dung.
+// Nhan vao: khong nhan props, su dung state noi bo va navigate cua router.
+// Tra ve: giao dien dang nhap bang mat khau va dieu huong sau khi dang nhap thanh cong.
 export default function Login() {
   const navigate = useNavigate();
-  const [loginMethod, setLoginMethod] = useState("password");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
-  const [otp, setOtp] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [status, setStatus] = useState("idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [textIndex, setTextIndex] = useState(0);
 
-  const isFormValid = loginMethod === "password" ? identifier.trim() !== "" && password.trim() !== "" : identifier.trim() !== "" && otp.trim() !== "";
+  const isFormValid = identifier.trim() !== "" && password.trim() !== "";
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTextIndex((prev) => (prev + 1) % welcomeTexts.length);
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const showOtpUnavailable = () => {
-    setStatus("error");
-    setErrorMessage("OTP sign-in is not available yet.");
-  };
-
+  // Ham nay dung de gui thong tin dang nhap len backend va xu ly ket qua tra ve.
+  // Nhan vao: event submit cua form dang nhap.
+  // Tac dong: goi service dang nhap, luu token/role vao authStorage va dieu huong sang trang phu hop.
   const handleLogin = async (event) => {
     event.preventDefault();
     if (!isFormValid) return;
-
-    if (loginMethod !== "password") {
-      showOtpUnavailable();
-      return;
-    }
 
     setStatus("loading");
     setErrorMessage("");
@@ -83,47 +66,10 @@ export default function Login() {
   return (
     <main className="login-main">
       <div className="login-card">
-        <div className="login-banner">
-          <div className="banner-content">
-            <h2>Welcome Back!</h2>
-            <p>
-              Sign in to <strong>{welcomeTexts[textIndex]}</strong>
-            </p>
-          </div>
-          <div className="banner-graphic">
-            <div className="circle c1"></div>
-            <div className="circle c2"></div>
-            <QrCode size={100} className="banner-qr" />
-          </div>
-        </div>
-
         <div className="login-form-container">
           <div className="login-header">
             <h3>Sign In</h3>
             <p>Enter your details to access your account.</p>
-          </div>
-
-          <div className="login-method-toggle">
-            <button
-              type="button"
-              className={loginMethod === "password" ? "active" : ""}
-              onClick={() => {
-                setLoginMethod("password");
-                setStatus("idle");
-                setErrorMessage("");
-              }}>
-              Password
-            </button>
-            <button
-              type="button"
-              className={loginMethod === "otp" ? "active" : ""}
-              onClick={() => {
-                setLoginMethod("otp");
-                setStatus("idle");
-                setErrorMessage("");
-              }}>
-              Send OTP
-            </button>
           </div>
 
           {status === "error" ? (
@@ -156,48 +102,25 @@ export default function Login() {
               </div>
             </div>
 
-            {loginMethod === "password" ? (
-              <div className="form-group">
-                <label>Password</label>
-                <div className="input-icon-wrap">
-                  <Lock className="input-icon" size={18} />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="........"
-                    value={password}
-                    onChange={(event) => {
-                      setPassword(event.target.value);
-                      setStatus("idle");
-                      setErrorMessage("");
-                    }}
-                  />
-                  <button type="button" className="toggle-pw-btn" onClick={() => setShowPassword((prev) => !prev)}>
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
+            <div className="form-group">
+              <label>Password</label>
+              <div className="input-icon-wrap">
+                <Lock className="input-icon" size={18} />
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="........"
+                  value={password}
+                  onChange={(event) => {
+                    setPassword(event.target.value);
+                    setStatus("idle");
+                    setErrorMessage("");
+                  }}
+                />
+                <button type="button" className="toggle-pw-btn" onClick={() => setShowPassword((prev) => !prev)}>
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
-            ) : (
-              <div className="form-group slide-in">
-                <label>One-Time Password (OTP)</label>
-                <div className="input-icon-wrap">
-                  <Smartphone className="input-icon" size={18} />
-                  <input
-                    type="text"
-                    placeholder="Enter 6-digit OTP"
-                    value={otp}
-                    onChange={(event) => {
-                      setOtp(event.target.value);
-                      setStatus("idle");
-                      setErrorMessage("");
-                    }}
-                    maxLength="6"
-                  />
-                  <button type="button" className="get-otp-btn" onClick={showOtpUnavailable}>
-                    Get OTP
-                  </button>
-                </div>
-              </div>
-            )}
+            </div>
 
             <div className="form-actions">
               <label className="remember-me">
@@ -218,19 +141,6 @@ export default function Login() {
                 </>
               )}
             </button>
-
-            <div className="social-login-divider">
-              <span>OR CONTINUE WITH</span>
-            </div>
-
-            <div className="social-buttons">
-              <button type="button" className="btn-social google">
-                <i className="fa-brands fa-google"></i> Google
-              </button>
-              <button type="button" className="btn-social apple">
-                <i className="fa-brands fa-apple"></i> Apple
-              </button>
-            </div>
 
             <div className="register-prompt">
               Don't have an account? <Link to="/register">Create one now</Link>

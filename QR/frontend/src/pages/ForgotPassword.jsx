@@ -3,28 +3,12 @@ import { Link } from "react-router-dom";
 import useForgotPassword from "../hooks/useForgotPassword";
 import "./ForgotPassword.css";
 
+// Ham nay dung de render trang quen mat khau va hien thi tung buoc khoi phuc tai khoan.
+// Nhan vao: khong nhan props, su dung state/handler tu useForgotPassword.
+// Tra ve: giao dien gui OTP, xac minh OTP va dat lai mat khau.
 export default function ForgotPassword() {
-  const {
-    step,
-    identifier,
-    otp,
-    newPassword,
-    confirmPassword,
-    showPassword,
-    showConfirmPassword,
-    status,
-    message,
-    timeLeft,
-    setIdentifier,
-    setOtp,
-    setNewPassword,
-    setConfirmPassword,
-    toggleShowPassword,
-    toggleShowConfirmPassword,
-    handleSendOtp,
-    handleVerifyOtp,
-    handleResetPassword,
-  } = useForgotPassword();
+  const { step, identifier, otp, newPassword, confirmPassword, showPassword, showConfirmPassword, status, message, timeLeft, setIdentifier, setOtp, setNewPassword, setConfirmPassword, toggleShowPassword, toggleShowConfirmPassword, handleSendOtp, handleVerifyOtp, handleResetPassword } =
+    useForgotPassword();
 
   return (
     <main className="forgot-main">

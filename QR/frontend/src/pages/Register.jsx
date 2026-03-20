@@ -6,25 +6,11 @@ import RegisterRoleSelector from "../components/register/RegisterRoleSelector";
 import useRegisterForm from "../hooks/useRegisterForm";
 import "./Register.css";
 
+// Ham nay dung de render trang dang ky va ket noi giao dien voi custom hook xu ly form.
+// Nhan vao: khong nhan props, su dung du lieu/handler tu useRegisterForm.
+// Tra ve: giao dien dang ky cho user hoac brand.
 export default function Register() {
-  const {
-    role,
-    showPassword,
-    showConfirmPassword,
-    isDragging,
-    formData,
-    fileInputRef,
-    handleChange,
-    handleRoleChange,
-    handleFileChange,
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
-    handleRemoveFile,
-    handleSubmit,
-    toggleShowPassword,
-    toggleShowConfirmPassword,
-  } = useRegisterForm();
+  const { role, showPassword, showConfirmPassword, isDragging, formData, fileInputRef, handleChange, handleRoleChange, handleFileChange, handleDragOver, handleDragLeave, handleDrop, handleRemoveFile, handleSubmit, toggleShowPassword, toggleShowConfirmPassword } = useRegisterForm();
 
   return (
     <main className="register-main">
@@ -37,28 +23,9 @@ export default function Register() {
         <RegisterRoleSelector role={role} onRoleChange={handleRoleChange} />
 
         <form className="register-form" onSubmit={handleSubmit} noValidate>
-          <RegisterAccountSection
-            formData={formData}
-            showPassword={showPassword}
-            showConfirmPassword={showConfirmPassword}
-            onChange={handleChange}
-            onTogglePassword={toggleShowPassword}
-            onToggleConfirmPassword={toggleShowConfirmPassword}
-          />
+          <RegisterAccountSection formData={formData} showPassword={showPassword} showConfirmPassword={showConfirmPassword} onChange={handleChange} onTogglePassword={toggleShowPassword} onToggleConfirmPassword={toggleShowConfirmPassword} />
 
-          {role === "brand" ? (
-            <RegisterBrandSection
-              formData={formData}
-              fileInputRef={fileInputRef}
-              isDragging={isDragging}
-              onChange={handleChange}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              onFileChange={handleFileChange}
-              onRemoveFile={handleRemoveFile}
-            />
-          ) : null}
+          {role === "brand" ? <RegisterBrandSection formData={formData} fileInputRef={fileInputRef} isDragging={isDragging} onChange={handleChange} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onFileChange={handleFileChange} onRemoveFile={handleRemoveFile} /> : null}
 
           <RegisterPolicyAgreement checked={formData.agreePolicy} onChange={handleChange} />
 

@@ -1,15 +1,15 @@
-/* Layout chính cho trang Home (Quét mã), tính toán chiều cao min để responsive tốt */
+/* Layout chinh cho trang Home, uu tien can giua khung camera va khu vuc ket qua. */
 .home-main {
   min-height: calc(670px - 84px - 90px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 22px;
+  gap: 18px;
   padding: 22px 0 44px;
 }
 
-/* Khung viền mô phỏng Camera quét QR code */
+/* Khung mo phong camera de preview hinh truoc khi chup va upload. */
 .scanner-container {
   width: 320px;
   height: 320px;
@@ -17,11 +17,7 @@
   position: relative;
   border-radius: 22px;
   background:
-    radial-gradient(
-      120px 120px at 30% 25%,
-      rgba(255, 255, 255, 0.1),
-      transparent 60%
-    ),
+    radial-gradient(120px 120px at 30% 25%, rgba(255, 255, 255, 0.1), transparent 60%),
     linear-gradient(135deg, #0b0f18 0%, #05060a 60%, #000 100%);
   box-shadow:
     0 22px 55px rgba(0, 0, 0, 0.25),
@@ -29,14 +25,18 @@
   overflow: hidden;
 }
 
-/* Các viền góc (corner) của khung Camera quét (Tạo UI giống máy quét thật) */
+.scanner-container.camera-live {
+  background: #030712;
+}
+
+/* Cac vien goc cua khung camera. */
 .corner {
   position: absolute;
   width: 54px;
   height: 54px;
   border-color: rgba(255, 255, 255, 0.92);
   border-style: solid;
-  z-index: 2;
+  z-index: 3;
 }
 
 .top-left {
@@ -45,18 +45,21 @@
   border-width: 5px 0 0 5px;
   border-top-left-radius: 10px;
 }
+
 .top-right {
   top: 18px;
   right: 18px;
   border-width: 5px 5px 0 0;
   border-top-right-radius: 10px;
 }
+
 .bottom-left {
   bottom: 18px;
   left: 18px;
   border-width: 0 0 5px 5px;
   border-bottom-left-radius: 10px;
 }
+
 .bottom-right {
   bottom: 18px;
   right: 18px;
@@ -64,37 +67,64 @@
   border-bottom-right-radius: 10px;
 }
 
-/* Thanh tia laser (scan-line) chạy lên xuống mô phỏng việc quét */
-.scan-line {
-  width: 86%;
-  height: 3px;
-  position: absolute;
-  left: 7%;
-  top: 14%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.95),
-    transparent
-  );
-  box-shadow:
-    0 0 16px rgba(255, 255, 255, 0.55),
-    0 0 36px rgba(140, 210, 255, 0.25);
-  border-radius: 999px;
-  animation: scanAnim 2.2s infinite ease-in-out;
+/* Preview video song sau khi camera da duoc cap quyen. */
+.camera-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
-/* Các nút hành động bên dưới (Quét từ Camera, Quét từ ảnh) */
+/* Hop thong bao trang thai xin quyen camera, upload va loi. */
+.scan-feedback {
+  width: 320px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(163, 194, 234, 0.95);
+  color: #2a3b55;
+  box-shadow: 0 8px 24px rgba(63, 120, 201, 0.1);
+  font-size: 14px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.scan-feedback.loading {
+  background: #eef4ff;
+  border-color: #cfe0fb;
+  color: #315ea4;
+}
+
+.scan-feedback.success {
+  background: #eaf8ef;
+  border-color: #b9e6ca;
+  color: #167c47;
+}
+
+.scan-feedback.error {
+  background: #feeced;
+  border-color: #f9c2c4;
+  color: #d92d20;
+}
+
+.scan-feedback-spinner {
+  animation: scanFeedbackSpin 1s linear infinite;
+}
+
+/* Cac nut hanh dong ben duoi. */
 .actions {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 22px;
+  gap: 14px;
 }
 
-/* Nút Bắt đầu Quét / Dừng Camera */
-.scan-btn {
+.scan-btn,
+.secondary-action-btn {
   margin: 0 !important;
   border: 0;
   min-width: 260px;
@@ -102,26 +132,48 @@
   border-radius: 999px;
   font-weight: 900;
   letter-spacing: 1px;
-  color: #fff;
-  background: linear-gradient(180deg, #6aa4e6 0%, #3f78c9 100%);
-  box-shadow:
-    0 16px 28px rgba(35, 80, 170, 0.18),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.25);
   cursor: pointer;
   transition:
     transform 0.12s ease,
     filter 0.12s ease;
 }
 
-.scan-btn:hover {
+.scan-btn {
+  color: #fff;
+  background: linear-gradient(180deg, #6aa4e6 0%, #3f78c9 100%);
+  box-shadow:
+    0 16px 28px rgba(35, 80, 170, 0.18),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+}
+
+.secondary-action-btn {
+  color: #1c2b41;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(25, 40, 60, 0.16);
+  box-shadow: 0 10px 24px rgba(18, 38, 78, 0.08);
+}
+
+.scan-btn:hover,
+.secondary-action-btn:hover,
+.gallery-box:hover {
   transform: translateY(-2px);
   filter: brightness(1.02);
 }
-.scan-btn:active {
+
+.scan-btn:active,
+.secondary-action-btn:active,
+.gallery-box:active {
   transform: translateY(0);
 }
 
-/* Nút Chọn ảnh từ Thư viện (Gallery) */
+.scan-btn:disabled,
+.gallery-box:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+/* Nut chon anh tu thu vien. */
 .gallery-box {
   margin: 0 !important;
   min-width: 260px;
@@ -144,71 +196,39 @@
 .gallery-box span {
   color: #1c2b41;
 }
+
 .gallery-box span {
   font-weight: 700;
 }
-.gallery-box:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.78);
+
+@keyframes scanFeedbackSpin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
-/* Hộp thoại hiển thị Kết quả quét (Result Box) */
-.result-box {
-  width: 320px;
-  background: white;
-  border: 1px solid #a3c2ea;
-  border-radius: 12px;
-  padding: 12px 16px;
-  box-shadow: 0 8px 24px rgba(63, 120, 201, 0.15);
-  animation: slideUpFade 0.4s ease-out;
-  margin-top: -10px;
-}
+@media (max-width: 768px) {
+  .home-main {
+    padding: 18px 0 36px;
+  }
 
-.result-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #3f78c9;
-  font-weight: 700;
-  margin-bottom: 8px;
-  border-bottom: 1px dashed #c8d9f0;
-  padding-bottom: 8px;
-}
+  .scanner-container,
+  .scan-feedback {
+    width: min(100%, 320px);
+  }
 
-.result-header span {
-  flex: 1;
-}
+  .scanner-container {
+    height: min(100vw - 64px, 320px);
+  }
 
-/* Nút (x) đóng hộp thoại kết quả */
-.close-result {
-  background: none;
-  border: none;
-  color: #94a3b8;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  transition: color 0.2s;
-}
+  .actions {
+    width: 100%;
+    padding: 0 16px;
+  }
 
-.close-result:hover {
-  color: #ff4d4d;
-}
-
-/* Chữ hiển thị kết quả (có tự động xuống dòng tránh bị tràn) */
-.result-text {
-  margin: 0;
-  font-size: 15px;
-  word-break: break-all;
-  color: #2a3b55;
-}
-
-/* Định dạng link bên trong kết quả nếu nó là URL hợp lệ */
-.result-text a {
-  color: #3f78c9;
-  text-decoration: none;
-  font-weight: 600;
-}
-
-.result-text a:hover {
-  text-decoration: underline;
+  .scan-btn,
+  .secondary-action-btn,
+  .gallery-box {
+    min-width: 100% !important;
+  }
 }

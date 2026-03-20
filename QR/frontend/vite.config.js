@@ -11,6 +11,21 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      "/pictures": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/QRScan": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/ProcessedQRScan": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
     },
   },
 });

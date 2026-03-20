@@ -1,6 +1,6 @@
-/* Căn giữa toàn bộ vùng chứa form login */
+/* Can giua toan bo vung chua form login va tao khoang tho de doc tren desktop/mobile. */
 .login-main {
-  padding: 20px 16px 60px;
+  padding: 24px 16px 60px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -8,97 +8,21 @@
   overflow-y: auto;
 }
 
-/* Thẻ (card) chứa form đăng nhập và banner */
+/* Khung dang nhap chinh chi giu mot card Sign In, khong con banner ben trai. */
 .login-card {
   width: 100%;
-  max-width: 900px;
+  max-width: 560px;
   background: white;
   border-radius: 24px;
   box-shadow: 0 20px 50px rgba(32, 64, 128, 0.1);
-  display: flex;
   overflow: hidden;
   border: 1px solid rgba(63, 120, 201, 0.15);
   animation: slideUpFade 0.5s ease-out;
-  min-height: 550px;
 }
 
-/* Vùng banner bên trái dùng gradient xanh */
-.login-banner {
-  flex: 1;
-  background: linear-gradient(135deg, #2b5c8f 0%, #3f78c9 100%);
-  padding: 40px;
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-}
-
-.banner-content {
-  z-index: 2;
-}
-
-.banner-content h2 {
-  font-size: 36px;
-  font-weight: 900;
-  margin: 0 0 10px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-}
-
-.banner-content p {
-  font-size: 16px;
-  opacity: 0.9;
-  line-height: 1.5;
-}
-
-/* Text thay đổi linh động (animated) trong banner */
-.banner-content strong {
-  display: block;
-  font-size: 18px;
-  margin-top: 5px;
-  color: #eaf1ff;
-  animation: fadeInDown 0.5s ease-out;
-}
-
-/* Vùng chứa các họa tiết trang trí (vòng tròn, QR code) của banner */
-.banner-graphic {
-  position: relative;
-  height: 200px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1;
-}
-
-.circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.c1 {
-  width: 250px;
-  height: 250px;
-  top: -20px;
-  right: -50px;
-}
-.c2 {
-  width: 150px;
-  height: 150px;
-  bottom: -30px;
-  left: -30px;
-}
-
-.banner-qr {
-  color: rgba(255, 255, 255, 0.8);
-  animation: dynamicPulse 3s infinite ease-in-out;
-}
-
-/* Vùng chứa form đăng nhập bên phải */
+/* Vung chua noi dung form dang nhap. */
 .login-form-container {
-  flex: 1.2;
-  padding: 40px 50px;
+  padding: 40px 42px;
   background: white;
   display: flex;
   flex-direction: column;
@@ -115,38 +39,10 @@
 .login-header p {
   color: #64748b;
   font-size: 14px;
-  margin: 0 0 25px;
+  margin: 0 0 30px;
 }
 
-/* Nút toggle để chuyển đổi giữa đăng nhập bằng Password và OTP */
-.login-method-toggle {
-  display: flex;
-  background: #f1f5f9;
-  padding: 5px;
-  border-radius: 12px;
-  margin-bottom: 25px;
-}
-
-.login-method-toggle button {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  background: transparent;
-  color: #64748b;
-  font-weight: 700;
-  font-size: 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.login-method-toggle button.active {
-  background: white;
-  color: #3f78c9;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-/* Style cho các nhóm input */
+/* Style cho cac nhom input. */
 .login-form .form-group {
   margin-bottom: 18px;
   position: relative;
@@ -190,7 +86,7 @@
   background: white;
 }
 
-/* Nút con mắt để ẩn/hiện mật khẩu */
+/* Nut con mat de an/hien mat khau. */
 .toggle-pw-btn {
   position: absolute;
   right: 12px;
@@ -206,27 +102,7 @@
   color: #3f78c9;
 }
 
-/* Nút "Get OTP" xuất hiện khi chọn đăng nhập bằng OTP */
-.get-otp-btn {
-  position: absolute;
-  right: 6px;
-  background: #eaf1ff;
-  color: #3f78c9;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.get-otp-btn:hover {
-  background: #3f78c9;
-  color: white;
-}
-
-/* Khu vực "Remember me" và "Forgot Password" */
+/* Khu vuc Remember me va Forgot Password. */
 .form-actions {
   display: flex;
   justify-content: space-between;
@@ -255,7 +131,7 @@
   text-decoration: underline;
 }
 
-/* Nút Submit đăng nhập chính */
+/* Nut submit dang nhap chinh. */
 .submit-login-btn {
   width: 100%;
   padding: 15px;
@@ -285,74 +161,12 @@
   cursor: not-allowed;
 }
 
-/* Dòng gạch ngang "OR CONTINUE WITH" */
-.social-login-divider {
-  text-align: center;
-  margin: 25px 0;
-  position: relative;
-}
-
-.social-login-divider::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #e2e8f0;
-  z-index: 1;
-}
-
-.social-login-divider span {
-  position: relative;
-  z-index: 2;
-  background: white;
-  padding: 0 10px;
-  color: #94a3b8;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* Các nút đăng nhập bằng Mạng xã hội (Google, Apple) */
-.social-buttons {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 25px;
-}
-
-.btn-social {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 12px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  background: white;
-  font-weight: 700;
-  color: #475569;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-social:hover {
-  background: #f8fbff;
-  border-color: #cbd5e1;
-}
-.btn-social.google i {
-  color: #ea4335;
-}
-.btn-social.apple i {
-  color: #000;
-  font-size: 18px;
-}
-
-/* Khung chuyển sang trang Đăng ký */
+/* Khung chuyen sang trang Dang ky. */
 .register-prompt {
   text-align: center;
   font-size: 14px;
   color: #64748b;
+  margin-top: 26px;
 }
 
 .register-prompt a {
@@ -361,7 +175,7 @@
   text-decoration: none;
 }
 
-/* Alert hiển thị trạng thái Thành công hoặc Thất bại */
+/* Alert hien thi trang thai thanh cong hoac that bai. */
 .msg-alert {
   display: flex;
   align-items: center;
@@ -379,13 +193,14 @@
   color: #d92d20;
   border: 1px solid #f9c2c4;
 }
+
 .msg-alert.success {
   background: #e6f6ec;
   color: #168b46;
   border: 1px solid #b5e3c7;
 }
 
-/* Spinner quay vòng khi đang loading */
+/* Spinner quay vong khi dang loading. */
 .spinner {
   width: 24px;
   height: 24px;
@@ -395,23 +210,30 @@
   animation: spin 1s linear infinite;
 }
 
-/* Hiệu ứng trượt nhẹ */
-.slide-in {
-  animation: fadeInDown 0.3s ease-out;
-}
-
 @keyframes spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-/* Responsive cho màn hình nhỏ (Mobile/Tablet) */
+/* Responsive cho man hinh nho. */
 @media (max-width: 768px) {
-  .login-banner {
-    display: none; /* Ẩn banner bên trái trên mobile */
+  .login-main {
+    padding: 16px 16px 44px;
+    align-items: flex-start;
   }
+
+  .login-card {
+    max-width: 100%;
+  }
+
   .login-form-container {
-    padding: 30px 25px;
+    padding: 30px 24px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
 }

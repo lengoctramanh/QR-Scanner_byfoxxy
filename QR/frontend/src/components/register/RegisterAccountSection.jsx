@@ -1,13 +1,9 @@
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 
-export default function RegisterAccountSection({
-  formData,
-  showPassword,
-  showConfirmPassword,
-  onChange,
-  onTogglePassword,
-  onToggleConfirmPassword,
-}) {
+// Ham nay dung de render nhom thong tin tai khoan co ban trong form dang ky.
+// Nhan vao: formData, trang thai hien mat khau va cac handler thay doi du lieu.
+// Tra ve: JSX cac truong ten, lien he, ngay sinh, gioi tinh va mat khau.
+export default function RegisterAccountSection({ formData, showPassword, showConfirmPassword, onChange, onTogglePassword, onToggleConfirmPassword }) {
   return (
     <div className="form-section">
       <h4 className="section-heading">

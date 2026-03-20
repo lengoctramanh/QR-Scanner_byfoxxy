@@ -1,3 +1,6 @@
+// Ham nay dung de render thanh tab dieu huong dung chung cho cac dashboard.
+// Nhan vao: items la danh sach tab, activeTab la tab dang duoc chon, onChange la ham doi tab.
+// Tra ve: JSX danh sach nut tab.
 export default function DashboardTabNav({ items, activeTab, onChange }) {
   return (
     <div className="tab-nav">

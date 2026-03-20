@@ -1,8 +1,14 @@
 const db = require("../config/database");
 
+// Ham nay dung de chon executor phu hop cho query log scan, uu tien transaction neu co.
+// Nhan vao: executor la connection/query executor tuy chon.
+// Tra ve: executor se duoc dung khi thuc thi SQL.
 const getExecutor = (executor) => executor || db;
 
 const scanLogModel = {
+  // Ham nay dung de ghi mot ban ghi scan vao bang scan_global_logs.
+  // Nhan vao: scanLogPayload chua thong tin lan quet, options co the chua executor.
+  // Tra ve: boolean cho biet lenh INSERT co thanh cong hay khong.
   async create(scanLogPayload, options = {}) {
     try {
       const executor = getExecutor(options.executor);

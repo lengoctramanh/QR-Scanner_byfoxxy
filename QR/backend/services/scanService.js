@@ -4,18 +4,30 @@ const { v4: createUUID } = require("uuid");
 
 const db = require("../config/database");
 const qrEngine = require("../app/qrEngine");
+const { buildProcessedImageTarget, saveScanImage } = require("../app/qrScanStorage");
+const { requestQrProcessingCycle } = require("../app/qrProcessingWorker");
+const pictureModel = require("../models/pictureModel");
 const qrCodeModel = require("../models/qrCodeModel");
 const scanLogModel = require("../models/scanLogModel");
 const qrActivationModel = require("../models/qrActivationModel");
 
+// Ham nay dung de bam gia tri secret nhap vao truoc khi luu log scan.
+// Nhan vao: secretValue la phan bi mat cua secret token.
+// Tra ve: chuoi hash SHA-256 dang hex.
 const hashHiddenPinInput = (secretValue) =>
   crypto.createHash("sha256").update(secretValue).digest("hex");
 
+// Ham nay dung de dong goi ket qua service theo chuan httpStatus/body.
+// Nhan vao: httpStatus la ma HTTP, body la payload JSON tra ve.
+// Tra ve: object gom httpStatus va body.
 const createResponse = (httpStatus, body) => ({
   httpStatus,
   body,
 });
 
+// Ham nay dung de tao payload co ban cua QR, product, brand va batch tu ban ghi tong hop.
+// Nhan vao: qrCode la ban ghi overview lay tu DB.
+// Tra ve: object du lieu co ban dung chung cho cac ket qua scan.
 const buildBasePayload = (qrCode) => ({
   qr: qrCode
     ? {
@@ -55,6 +67,9 @@ const buildBasePayload = (qrCode) => ({
     : null,
 });
 
+// Ham nay dung de dong goi du lieu log scan truoc khi ghi vao bang scan_global_logs.
+// Nhan vao: object chua token da nhap, qrId, loai scan, ket qua scan va scanContext.
+// Tra ve: object scan log payload hoan chinh.
 const buildScanLogPayload = ({
   qrPublicTokenInput,
   hiddenPinInputHash = null,
@@ -76,6 +91,9 @@ const buildScanLogPayload = ({
   deviceInfo: scanContext.deviceInfo,
 });
 
+// Ham nay dung de quy doi trang thai QR thanh ket qua log cua public scan.
+// Nhan vao: status la trang thai hien tai cua QR trong DB.
+// Tra ve: chuoi scanResult phu hop voi nghiep vu.
 const resolvePublicScanResult = (status) => {
   switch (status) {
     case "NEW":
@@ -93,6 +111,9 @@ const resolvePublicScanResult = (status) => {
   }
 };
 
+// Ham nay dung de kiem tra lan scan secret hien tai co cung actor voi lan kich hoat dau tien hay khong.
+// Nhan vao: activationRecord la ban ghi kich hoat, scanContext la boi canh scan hien tai.
+// Tra ve: boolean cho biet co phai cung tai khoan hoac fingerprint hay khong.
 const isSameActivationActor = (activationRecord, scanContext) => {
   if (!activationRecord) {
     return false;
@@ -111,6 +132,9 @@ const isSameActivationActor = (activationRecord, scanContext) => {
   return Boolean(matchedAccount || matchedFingerprint);
 };
 
+// Ham nay dung de tao business payload thong nhat cho ket qua quet QR.
+// Nhan vao: object chua verdict, code, message, qrCode va extraData.
+// Tra ve: body JSON chuan de tra ve cho controller.
 const createBusinessBody = ({ verdict, code, message, qrCode, extraData = {} }) => ({
   success: true,
   verdict,
@@ -122,6 +146,9 @@ const createBusinessBody = ({ verdict, code, message, qrCode, extraData = {} }) 
   },
 });
 
+// Ham nay dung de tao response loi validate dau vao.
+// Nhan vao: message la noi dung loi can tra ve.
+// Tra ve: object response gom ma 400 va payload loi.
 const createValidationError = (message) =>
   createResponse(400, {
     success: false,
@@ -129,6 +156,9 @@ const createValidationError = (message) =>
   });
 
 const scanService = {
+  // Ham nay dung de xu ly public scan, ghi log va tra danh gia tinh trang QR.
+  // Nhan vao: publicToken va scanContext chua metadata nguoi quet.
+  // Tra ve: object response nghiep vu voi httpStatus va body de controller tra ve client.
   async handlePublicScan(publicToken, scanContext = {}) {
     const normalizedToken =
       typeof publicToken === "string" ? publicToken.trim() : "";
@@ -258,6 +288,9 @@ const scanService = {
     }
   },
 
+  // Ham nay dung de xu ly secret scan, kich hoat QR neu hop le va ghi toan bo log/activation vao DB.
+  // Nhan vao: secretToken va scanContext chua metadata nguoi quet.
+  // Tra ve: object response nghiep vu sau khi xac thuc secret token.
   async handleSecretScan(secretToken, scanContext = {}) {
     const parsedSecretToken = qrEngine.parseSecretToken(secretToken);
 
@@ -528,6 +561,66 @@ const scanService = {
       throw error;
     } finally {
       connection.release();
+    }
+  },
+
+  // Ham nay dung de nhan anh tu camera hoac gallery, luu vao app/QRScan va tra URL cho frontend.
+  // Nhan vao: file la anh do multer doc duoc, source cho biet anh den tu camera hay gallery.
+  // Tra ve: object response chua metadata cua anh da duoc luu de frontend hien preview hoac tai xuong.
+  async preprocessImage(file, source = "camera") {
+    if (!file) {
+      return createValidationError("Image file is required.");
+    }
+
+    if (!String(file.mimetype || "").toLowerCase().startsWith("image/")) {
+      return createValidationError("Only image uploads are supported.");
+    }
+
+    try {
+      const pictureId = createUUID();
+      const storedImage = saveScanImage({ file, source });
+      const processedImageTarget = buildProcessedImageTarget(pictureId, ".png");
+
+      await pictureModel.createScanPicture({
+        pictureId,
+        pictureGroup: "QR_SCAN",
+        captureSource: storedImage.source,
+        originalFileName: storedImage.fileName,
+        originalMimeType: file.mimetype,
+        originalStoragePath: storedImage.relativeStoragePath,
+        originalPublicUrl: storedImage.publicUrl,
+        processedFileName: processedImageTarget.fileName,
+        processedStoragePath: processedImageTarget.relativeStoragePath,
+        processedPublicUrl: processedImageTarget.publicUrl,
+        processingStatus: "PENDING",
+        processingNote: "Waiting for the Python/OpenCV processing worker.",
+      });
+
+      requestQrProcessingCycle();
+
+      return createResponse(200, {
+        success: true,
+        message: "QR image received successfully. The backend processing worker has been queued.",
+        data: {
+          pictureId,
+          fileName: storedImage.fileName,
+          source: storedImage.source,
+          imageUrl: storedImage.publicUrl,
+          downloadUrl: storedImage.publicUrl,
+          originalStoragePath: storedImage.relativeStoragePath,
+          processedImageFileName: processedImageTarget.fileName,
+          processedImagePath: processedImageTarget.relativeStoragePath,
+          processedImageUrl: processedImageTarget.publicUrl,
+          processingStatus: "PENDING",
+          savedAt: storedImage.savedAt,
+        },
+      });
+    } catch (error) {
+      console.error("Service Error (preprocessImage):", error);
+      return createResponse(500, {
+        success: false,
+        message: "Unable to store the image for QR preprocessing.",
+      });
     }
   },
 };

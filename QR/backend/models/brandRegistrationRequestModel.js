@@ -1,10 +1,16 @@
 const db = require("../config/database");
 
+// Ham nay dung de chon executor phu hop cho query request, uu tien transaction neu co.
+// Nhan vao: executor la connection/query executor tuy chon.
+// Tra ve: executor se duoc dung de thuc thi SQL.
 const getExecutor = (executor) => executor || db;
 
 const ACTIVE_REQUEST_STATUSES = ["PENDING", "UNDER_REVIEW"];
 
 const brandRegistrationRequestModel = {
+  // Ham nay dung de kiem tra xung dot giua request moi va cac request brand dang con hieu luc.
+  // Nhan vao: conflictPayload chua email, phone, taxId; options co the chua executor.
+  // Tra ve: dong request xung dot dau tien hoac null neu khong co xung dot trong DB.
   async checkPendingConflict(conflictPayload, options = {}) {
     try {
       const executor = getExecutor(options.executor);
@@ -41,6 +47,9 @@ const brandRegistrationRequestModel = {
     }
   },
 
+  // Ham nay dung de chen mot yeu cau dang ky brand moi vao bang brand_registration_requests.
+  // Nhan vao: requestPayload chua toan bo du lieu dang ky, options co the chua executor.
+  // Tra ve: boolean cho biet lenh INSERT co thanh cong hay khong.
   async createRequest(requestPayload, options = {}) {
     try {
       const executor = getExecutor(options.executor);
@@ -92,6 +101,9 @@ const brandRegistrationRequestModel = {
     }
   },
 
+  // Ham nay dung de lay chi tiet mot yeu cau dang ky brand theo requestId.
+  // Nhan vao: requestId la ma yeu cau, options co the chua executor.
+  // Tra ve: ban ghi request hoac null neu khong tim thay trong DB.
   async findById(requestId, options = {}) {
     try {
       const executor = getExecutor(options.executor);
@@ -130,6 +142,9 @@ const brandRegistrationRequestModel = {
     }
   },
 
+  // Ham nay dung de lay danh sach request brand, co the loc theo status.
+  // Nhan vao: filters chua status tuy chon va options co the chua executor.
+  // Tra ve: mang ban ghi request lay tu DB.
   async listRequests(filters = {}, options = {}) {
     try {
       const executor = getExecutor(options.executor);
@@ -203,6 +218,9 @@ const brandRegistrationRequestModel = {
     }
   },
 
+  // Ham nay dung de cap nhat trang thai review cua mot request brand.
+  // Nhan vao: updatePayload chua requestStatus, adminNote, reviewedByAdminId, requestId; options co the chua executor.
+  // Tra ve: boolean cho biet lenh UPDATE co thanh cong hay khong.
   async updateStatus(updatePayload, options = {}) {
     try {
       const executor = getExecutor(options.executor);
