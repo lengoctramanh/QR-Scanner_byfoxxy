@@ -1,0 +1,352 @@
+/* Layout cho form Đăng ký (Register) */
+.register-main {
+  padding: 20px 16px 60px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* Thẻ (Card) chính chứa nội dung form Đăng ký */
+.register-card {
+  width: 100%;
+  max-width: 800px;
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 15px 40px rgba(32, 64, 128, 0.08);
+  padding: 35px 40px;
+  border: 1px solid rgba(63, 120, 201, 0.15);
+  animation: slideUpFade 0.5s ease-out;
+}
+
+.reg-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.reg-header h2 {
+  color: #3f78c9;
+  font-size: 32px;
+  font-weight: 900;
+  margin: 0 0 10px;
+}
+
+.reg-header p {
+  color: #64748b;
+  margin: 0;
+  font-size: 15px;
+}
+
+/* Thanh chọn Quyền (Role) */
+.role-selector {
+  display: flex;
+  background: #f1f5f9;
+  padding: 6px;
+  border-radius: 12px;
+  margin-bottom: 30px;
+  border: 1px solid #e2e8f0;
+}
+
+.role-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.role-btn.active {
+  background: white;
+  color: #3f78c9;
+  box-shadow: 0 4px 12px rgba(63, 120, 201, 0.15);
+}
+
+.role-btn:hover:not(.active) {
+  color: #1e293b;
+}
+
+/* Các section phân cách trong Form */
+.form-section {
+  margin-bottom: 35px;
+  padding-bottom: 25px;
+  border-bottom: 1px dashed #cbd5e1;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 25px;
+  padding-bottom: 0;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1e293b;
+  font-size: 18px;
+  margin: 0 0 20px 0;
+  font-weight: 700;
+}
+
+.section-heading svg {
+  color: #3f78c9;
+}
+
+/* Grid chứa các input */
+.input-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.input-group.full-width {
+  grid-column: span 2;
+}
+
+.input-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 8px;
+}
+
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group input[type="password"],
+.input-group input[type="date"],
+.input-group input[type="url"],
+.input-group select {
+  width: 100%;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #1e293b;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  border-color: #3f78c9;
+  background: white;
+  box-shadow: 0 0 0 4px rgba(63, 120, 201, 0.1);
+}
+
+/* Mật khẩu (có icon mắt) */
+.pw-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.toggle-pw-btn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.toggle-pw-btn:hover {
+  color: #3f78c9;
+}
+
+/* KHU VỰC UPLOAD FILE */
+.file-upload-zone {
+  border: 2px dashed #cbd5e1;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.file-upload-zone .upload-icon {
+  color: #7fb0ea;
+  transition: transform 0.3s ease;
+}
+
+.file-upload-zone:hover,
+.file-upload-zone.dragging {
+  background: #eaf1ff;
+  border-color: #3f78c9;
+  transform: scale(1.01);
+}
+
+.file-upload-zone:hover .upload-icon,
+.file-upload-zone.dragging .upload-icon {
+  transform: translateY(-3px);
+  color: #3f78c9;
+}
+
+.file-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.file-selected-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  background: #eaf1ff;
+  border-radius: 10px;
+  border: 1px solid rgba(63, 120, 201, 0.2);
+  transition: background 0.2s;
+}
+
+.file-selected-box:hover {
+  background: #dfe8ff;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.file-icon {
+  color: #3f78c9;
+  flex-shrink: 0;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #2a3b55;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 250px;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  transition: color 0.2s;
+}
+
+.remove-file-btn:hover {
+  color: #ff4d4d;
+}
+
+/* NÚT SUBMIT ĐĂNG KÝ */
+.submit-reg-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(180deg, #6aa4e6 0%, #3f78c9 100%);
+  color: white;
+  font-size: 16px;
+  font-weight: 800;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(63, 120, 201, 0.25);
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  letter-spacing: 1px;
+}
+
+.submit-reg-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(63, 120, 201, 0.35);
+}
+
+.submit-reg-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(63, 120, 201, 0.2);
+}
+
+/* Chính sách và điều khoản */
+.policy-check {
+  margin-bottom: 25px;
+}
+
+.policy-check label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: #475569;
+  cursor: pointer;
+}
+
+.policy-check input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3f78c9;
+}
+
+.policy-check a {
+  color: #3f78c9;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.policy-check a:hover {
+  text-decoration: underline;
+}
+
+.login-prompt {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #64748b;
+}
+
+.login-prompt a {
+  color: #3f78c9;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+@media (max-width: 768px) {
+  .register-card {
+    padding: 25px 20px;
+  }
+  .input-grid {
+    grid-template-columns: 1fr;
+  }
+  .input-group.full-width {
+    grid-column: span 1;
+  }
+  .reg-header h2 {
+    font-size: 26px;
+  }
+}

@@ -1,11 +1,15 @@
+# node modules
+QR/node_modules/
+QR/frontend/node_modules/
+QR/backend/node_modules/
 
-node_modules/
-frontend/node_modules/
-backend/node_modules/
+# env files
+QR/.env
+QR/backend/.env
+QR/frontend/.env
 
-.env
-backend/.env
-frontend/.env
-
+# logs
 npm-debug.log
+
+# mac
 .DS_Store
