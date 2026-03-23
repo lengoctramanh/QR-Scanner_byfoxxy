@@ -34,11 +34,12 @@ const brandModel = {
           brand_name,
           tax_id,
           website,
+          address,
           industry,
           product_categories,
           verified
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const [result] = await executor.execute(query, [
@@ -47,6 +48,7 @@ const brandModel = {
         brandPayload.brandName,
         brandPayload.taxId,
         brandPayload.website,
+        brandPayload.address || null,
         brandPayload.industry,
         brandPayload.productCategories,
         brandPayload.verified ?? false,
@@ -73,6 +75,7 @@ const brandModel = {
           logo_url,
           tax_id,
           website,
+          address,
           industry,
           product_categories,
           verified
@@ -85,6 +88,57 @@ const brandModel = {
       return rows[0] || null;
     } catch (error) {
       console.error("Model Error (findBrandByAccountId):", error);
+      throw error;
+    }
+  },
+
+  // Ham nay dung de tim thuong hieu theo ma so thue de kiem tra trung khi cap nhat.
+  // Nhan vao: taxId la ma so thue can tim, options co the chua executor.
+  // Tra ve: ban ghi toi gian chua brand_id hoac null neu khong tim thay.
+  async findByTaxId(taxId, options = {}) {
+    try {
+      const executor = getExecutor(options.executor);
+      const query = `
+        SELECT brand_id, account_id, tax_id
+        FROM brands
+        WHERE tax_id = ?
+        LIMIT 1
+      `;
+      const [rows] = await executor.execute(query, [taxId]);
+      return rows[0] || null;
+    } catch (error) {
+      console.error("Model Error (findByTaxId):", error);
+      throw error;
+    }
+  },
+
+  // Ham nay dung de cap nhat thong tin business profile cua thuong hieu.
+  // Nhan vao: brandPayload chua cac field cho phep cap nhat va options co the chua executor.
+  // Tra ve: boolean cho biet lenh UPDATE co tac dong len ban ghi hay khong.
+  async updateBrandProfile(brandPayload, options = {}) {
+    try {
+      const executor = getExecutor(options.executor);
+      const query = `
+        UPDATE brands
+        SET
+          brand_name = ?,
+          logo_url = ?,
+          tax_id = ?,
+          website = ?,
+          address = ?
+        WHERE brand_id = ?
+      `;
+      const [result] = await executor.execute(query, [
+        brandPayload.brandName,
+        brandPayload.logoUrl,
+        brandPayload.taxId,
+        brandPayload.website,
+        brandPayload.address,
+        brandPayload.brandId,
+      ]);
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error("Model Error (updateBrandProfile):", error);
       throw error;
     }
   },

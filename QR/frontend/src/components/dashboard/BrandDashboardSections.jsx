@@ -1,12 +1,30 @@
-import { Building, Camera, Eye, EyeOff, FileSpreadsheet, Globe, Mail, MapPin, Package, Phone, PlusCircle, Settings, UploadCloud, X } from "lucide-react";
+import { useState } from "react";
+import {
+  Camera,
+  FileSpreadsheet,
+  Globe,
+  Mail,
+  MapPin,
+  Package,
+  Phone,
+  PlusCircle,
+  Save,
+  Settings,
+  ShieldCheck,
+  Sticker,
+  UploadCloud,
+  X,
+} from "lucide-react";
+import BrandProfileSettings from "./BrandProfileSettings";
+import ChangePassword from "./ChangePassword";
 import DashboardTabNav from "./DashboardTabNav";
 import defaultAvatar from "../../assets/image.png";
 
-const DEFAULT_BRAND_LOGO = "/pictures/logo/logoDefault.png";
+const DEFAULT_BRAND_LOGO = "/pictures/logo/logo1.png";
 
 const BRAND_DASHBOARD_TABS = [
   { id: "manage", icon: Package, label: "Manage Products" },
-  { id: "create", icon: PlusCircle, label: "Issue QR Codes" },
+  { id: "create", icon: PlusCircle, label: "Issue Authentication QR" },
   { id: "settings", icon: Settings, label: "Settings" },
 ];
 
@@ -17,20 +35,91 @@ const INPUT_STYLE = {
   border: "1px solid #cbd5e1",
 };
 
-const GRID_STYLE = {
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: "15px",
+// Ham nay dung de format ngay sang dang doc duoc tren giao dien tieng Anh.
+// Nhan vao: value la chuoi ngay hoac Date.
+// Tra ve: chuoi ngay da format hoac "Pending update" neu khong hop le.
+const formatDateValue = (value) => {
+  if (!value) {
+    return "Pending update";
+  }
+
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Pending update";
+  }
+
+  return parsedDate.toLocaleDateString("en-GB");
 };
 
-const TOGGLE_BUTTON_STYLE = {
-  position: "absolute",
-  right: "10px",
-  top: "10px",
-  background: "none",
-  border: "none",
-  color: "#94a3b8",
+const formatDateTimeValue = (value) => {
+  if (!value) {
+    return "Not scanned yet";
+  }
+
+  const parsedDate = new Date(value);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return "Not scanned yet";
+  }
+
+  return parsedDate.toLocaleString("en-GB");
 };
+
+const calculateRemainingDays = (expiryDate) => {
+  if (!expiryDate) {
+    return null;
+  }
+
+  const parsedExpiryDate = new Date(expiryDate);
+
+  if (Number.isNaN(parsedExpiryDate.getTime())) {
+    return null;
+  }
+
+  const millisecondsPerDay = 24 * 60 * 60 * 1000;
+  const diffDays = Math.ceil((parsedExpiryDate.getTime() - Date.now()) / millisecondsPerDay);
+  return diffDays;
+};
+
+const buildLatestAssetCards = (qrAssets = {}) => [
+  {
+    id: "web-link",
+    title: "QR Web Link",
+    description: qrAssets.webLink?.value || "Main website QR",
+    imageUrl: qrAssets.webLink?.imageUrl || "",
+  },
+  {
+    id: "qr-1",
+    title: "QR 1",
+    description: "Authentication QR",
+    imageUrl: qrAssets.qr1?.imageUrl || "",
+  },
+];
+
+const buildLabelAssetCards = (label) => [
+  { id: "websiteQr", title: "QR Web Link", imageUrl: label?.assets?.websiteQr?.publicUrl || "" },
+  { id: "qr1", title: "QR 1", imageUrl: label?.assets?.qr1?.publicUrl || "" },
+];
+
+function BatchInfoItem({ label, value }) {
+  return (
+    <div className="catalog-meta-item">
+      <span className="catalog-meta-label">{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function QrThumb({ imageUrl, title, className = "" }) {
+  return imageUrl ? (
+    <img src={imageUrl} alt={title} className={className} />
+  ) : (
+    <div className={`${className} qr-thumb-placeholder`}>
+      <span>{title}</span>
+    </div>
+  );
+}
 
 // Ham nay dung de render sidebar thong tin thuong hieu trong dashboard brand.
 // Nhan vao: brandInfo la du lieu brand, avatarInputRef la ref input avatar, onAvatarChange la ham doi avatar.
@@ -43,15 +132,18 @@ export function BrandDashboardSidebar({ brandInfo, avatarInputRef, onAvatarChang
   const displayPhone = brandInfo.phone || "Pending update";
   const displayAddress = brandInfo.address || "Pending update";
   const displayWebsite = brandInfo.website || "Pending update";
+  const resolvedAvatar = typeof brandInfo.avatar === "string" && brandInfo.avatar.trim() ? brandInfo.avatar : defaultAvatar;
+  const resolvedBrandLogo = typeof brandInfo.logo === "string" && brandInfo.logo.trim() ? brandInfo.logo : DEFAULT_BRAND_LOGO;
 
   return (
     <aside className="brand-sidebar">
       <div className="brand-avatar-wrapper">
         <img
-          src={brandInfo.avatar || defaultAvatar}
+          src={resolvedAvatar}
           alt="Brand Avatar"
           className="brand-avatar-img"
           onError={(event) => {
+            event.currentTarget.onerror = null;
             event.currentTarget.src = defaultAvatar;
           }}
         />
@@ -74,10 +166,11 @@ export function BrandDashboardSidebar({ brandInfo, avatarInputRef, onAvatarChang
 
         <div className="brand-logo-showcase">
           <img
-            src={brandInfo.logo || DEFAULT_BRAND_LOGO}
+            src={resolvedBrandLogo}
             alt="Brand Logo"
             className="brand-logo-img"
             onError={(event) => {
+              event.currentTarget.onerror = null;
               event.currentTarget.src = DEFAULT_BRAND_LOGO;
             }}
           />
@@ -114,26 +207,46 @@ export function BrandDashboardSidebar({ brandInfo, avatarInputRef, onAvatarChang
 // Tra ve: JSX noi dung tab quan ly san pham, tao QR va cai dat.
 export function BrandDashboardContent({
   activeTab,
+  activeExportBatchId,
   brandInfo,
+  avatarFileName,
+  avatarInputRef,
+  brandProducts,
   excelFile,
   excelInputRef,
+  isBatchUploading,
   isDragging,
-  passwords,
+  isAvatarDragging,
+  isLogoDragging,
+  isProductSaving,
+  isProfileSaving,
+  isTemplateDownloading,
+  latestIssuedQrAssets,
+  logoFileName,
+  logoInputRef,
+  productFeedback,
+  profileFeedback,
   qrForm,
-  showPasswords,
   onBrandInfoChange,
+  onAvatarChange,
+  onAvatarDrop,
+  onAvatarDragLeave,
+  onAvatarDragOver,
+  onBatchExport,
   onExcelChange,
   onExcelDragLeave,
   onExcelDragOver,
   onExcelDrop,
   onExcelRemove,
   onExcelSubmit,
+  onLogoChange,
+  onLogoDrop,
+  onLogoDragLeave,
+  onLogoDragOver,
   onManualQrSubmit,
-  onPasswordChange,
-  onPasswordVisibilityToggle,
   onQrFormChange,
   onSettingsSubmit,
-  onSystemGeneratedToggle,
+  onTemplateDownload,
   onTabChange,
 }) {
   return (
@@ -141,12 +254,25 @@ export function BrandDashboardContent({
       <DashboardTabNav items={BRAND_DASHBOARD_TABS} activeTab={activeTab} onChange={onTabChange} />
 
       <div className="tab-body">
-        {activeTab === "manage" ? <ManageProductsSection /> : null}
+        {activeTab === "manage" ? (
+          <ManageProductsSection
+            activeExportBatchId={activeExportBatchId}
+            brandProducts={brandProducts}
+            latestIssuedQrAssets={latestIssuedQrAssets}
+            onBatchExport={onBatchExport}
+          />
+        ) : null}
         {activeTab === "create" ? (
           <IssueQrSection
+            brandInfo={brandInfo}
             excelFile={excelFile}
             excelInputRef={excelInputRef}
+            isBatchUploading={isBatchUploading}
             isDragging={isDragging}
+            isProductSaving={isProductSaving}
+            isTemplateDownloading={isTemplateDownloading}
+            latestIssuedQrAssets={latestIssuedQrAssets}
+            productFeedback={productFeedback}
             qrForm={qrForm}
             onExcelChange={onExcelChange}
             onExcelDragLeave={onExcelDragLeave}
@@ -156,33 +282,283 @@ export function BrandDashboardContent({
             onExcelSubmit={onExcelSubmit}
             onManualQrSubmit={onManualQrSubmit}
             onQrFormChange={onQrFormChange}
-            onSystemGeneratedToggle={onSystemGeneratedToggle}
+            onTemplateDownload={onTemplateDownload}
           />
         ) : null}
         {activeTab === "settings" ? (
-          <SettingsSection
-            brandInfo={brandInfo}
-            passwords={passwords}
-            showPasswords={showPasswords}
-            onBrandInfoChange={onBrandInfoChange}
-            onPasswordChange={onPasswordChange}
-            onPasswordVisibilityToggle={onPasswordVisibilityToggle}
-            onSettingsSubmit={onSettingsSubmit}
-          />
+          <div className="settings-stack">
+            <BrandProfileSettings
+              brandInfo={brandInfo}
+              avatarInputRef={avatarInputRef}
+              logoInputRef={logoInputRef}
+              avatarFileName={avatarFileName}
+              logoFileName={logoFileName}
+              isAvatarDragging={isAvatarDragging}
+              isLogoDragging={isLogoDragging}
+              isSubmitting={isProfileSaving}
+              feedback={profileFeedback}
+              onFieldChange={onBrandInfoChange}
+              onSubmit={onSettingsSubmit}
+              onAvatarChange={onAvatarChange}
+              onLogoChange={onLogoChange}
+              onAvatarDrop={onAvatarDrop}
+              onLogoDrop={onLogoDrop}
+              onAvatarDragLeave={onAvatarDragLeave}
+              onLogoDragLeave={onLogoDragLeave}
+              onAvatarDragOver={onAvatarDragOver}
+              onLogoDragOver={onLogoDragOver}
+            />
+
+            <ChangePassword />
+          </div>
         ) : null}
       </div>
     </section>
   );
 }
 
-// Ham nay dung de render tab quan ly san pham cua brand.
-// Nhan vao: khong nhan props nao.
-// Tra ve: JSX thong bao trang thai tab manage products.
-function ManageProductsSection() {
+function LatestIssuedQrPanel({ latestIssuedQrAssets }) {
+  if (!latestIssuedQrAssets?.qrAssets) {
+    return null;
+  }
+
+  const { product, qrAssets } = latestIssuedQrAssets;
+  const assetCards = buildLatestAssetCards(qrAssets);
+
   return (
-    <div>
-      <h3 style={{ color: "#3f78c9", marginTop: 0 }}>Issued QR code catalog</h3>
-      <p style={{ color: "#64748b" }}>The product list and dashboard charts are still being completed.</p>
+    <div className="qr-asset-panel">
+      <div className="qr-asset-panel-header">
+        <div>
+          <h4>Latest Authentication Assets</h4>
+          <p>Fresh previews from the newest batch so you can verify the main website QR and QR 1 immediately.</p>
+        </div>
+        {product?.productName ? <span className="catalog-badge">Product: {product.productName}</span> : null}
+      </div>
+
+      <div className="qr-asset-grid">
+        {assetCards.map((assetCard) => (
+          <article key={assetCard.id} className="qr-asset-card">
+            <h5>{assetCard.title}</h5>
+            <QrThumb imageUrl={assetCard.imageUrl} title={assetCard.title} className="qr-asset-image" />
+            <code className="qr-token">{assetCard.description}</code>
+          </article>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LabelSticker({ label }) {
+  const assetCards = buildLabelAssetCards(label);
+
+  return (
+    <article className="batch-label-sticker">
+      <div className="batch-label-header">
+        <strong>Label {String(label.sequenceNo).padStart(3, "0")}</strong>
+        <span>{label.labelCode}</span>
+      </div>
+
+      <div className="batch-label-qr-grid">
+        {assetCards.map((assetCard) => (
+          <div key={`${label.labelId}-${assetCard.id}`} className="batch-label-qr-cell" title={assetCard.title}>
+            <QrThumb imageUrl={assetCard.imageUrl} title={assetCard.title} className="batch-label-qr-image" />
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function BatchDetailModal({ batchDetail, activeExportBatchId, onBatchExport, onClose }) {
+  if (!batchDetail) {
+    return null;
+  }
+
+  const { batch, product } = batchDetail;
+  const remainingDays = calculateRemainingDays(batch.expiryDate);
+
+  return (
+    <div className="batch-modal-overlay" onClick={onClose}>
+      <div className="batch-modal-card" onClick={(event) => event.stopPropagation()}>
+        <div className="batch-modal-header">
+          <div>
+            <h4>{batch.batchCode}</h4>
+            <p>
+              {product.brandName || "Pending brand"} | {product.productName}
+            </p>
+          </div>
+          <button type="button" className="batch-modal-close" onClick={onClose}>
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="catalog-meta-grid">
+          <BatchInfoItem label="Brand" value={product.brandName || "Pending update"} />
+          <BatchInfoItem label="Manufacturer" value={product.manufacturerName || "Pending update"} />
+          <BatchInfoItem label="Created At" value={formatDateTimeValue(batch.createdAt)} />
+          <BatchInfoItem label="Manufacture Date" value={formatDateValue(batch.manufactureDate)} />
+          <BatchInfoItem label="Expiry Date" value={formatDateValue(batch.expiryDate)} />
+          <BatchInfoItem label="Remaining Days" value={remainingDays == null ? "Pending update" : `${remainingDays} day(s)`} />
+          <BatchInfoItem label="Issued Labels" value={String(batch.issueQuantity || 0)} />
+          <BatchInfoItem label="Public Scans" value={String(batch.totalPublicScans || 0)} />
+          <BatchInfoItem label="Secret Attempts" value={String(batch.totalPinAttempts || 0)} />
+        </div>
+
+        <div className="catalog-description-block">
+          <span className="catalog-meta-label">Quality Certifications</span>
+          <p>{product.qualityCertifications || "Pending update"}</p>
+        </div>
+
+        <div className="catalog-description-block">
+          <span className="catalog-meta-label">Description</span>
+          <p>{product.description || "No description yet."}</p>
+        </div>
+
+        <div className="catalog-card-footer">
+          <div className="catalog-stat">
+            <Sticker size={16} />
+            <span>Website scans: {batch.totalPublicScans ?? 0}</span>
+          </div>
+          <div className="catalog-stat">
+            <Package size={16} />
+            <span>PIN attempts: {batch.totalPinAttempts ?? 0}</span>
+          </div>
+        </div>
+
+        <div className="catalog-action-row">
+          {product.generalInfoUrl ? (
+            <a href={product.generalInfoUrl} target="_blank" rel="noreferrer" className="catalog-link">
+              Open product information link
+            </a>
+          ) : (
+            <span className="catalog-link disabled">No product information link</span>
+          )}
+
+          <button
+            type="button"
+            className="catalog-export-button"
+            disabled={activeExportBatchId === batch.batchId}
+            onClick={() => onBatchExport(batch.batchId)}>
+            {activeExportBatchId === batch.batchId ? "EXPORTING..." : "Export ZIP"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ManageProductsSection({ activeExportBatchId, brandProducts, latestIssuedQrAssets, onBatchExport }) {
+  const [selectedBatchDetail, setSelectedBatchDetail] = useState(null);
+
+  return (
+    <div className="catalog-section">
+      <LatestIssuedQrPanel latestIssuedQrAssets={latestIssuedQrAssets} />
+
+      <div className="catalog-section-header">
+        <div>
+          <h3>Issued Product Catalog</h3>
+          <p>Each catalog opens into horizontal batch lanes, and every batch keeps the exact number of authentication labels requested by the brand.</p>
+        </div>
+        <span className="catalog-badge">{brandProducts.length} catalogs</span>
+      </div>
+
+      {brandProducts.length ? (
+        <div className="catalog-product-stack">
+          {brandProducts.map((product) => (
+            <section key={product.productId} className="catalog-product-panel">
+              <div className="catalog-product-header">
+                <div>
+                  <h4>{product.productName}</h4>
+                  <p>
+                    {product.brandName || "Pending brand"} | {product.manufacturerName || "Pending manufacturer"}
+                  </p>
+                </div>
+                <span className="catalog-badge">{product.batchCount || 0} batches</span>
+              </div>
+
+              <div className="catalog-product-submeta">
+                <span>{product.originCountry || "Pending origin"}</span>
+                <span>{product.qualityCertifications || "No quality certifications yet."}</span>
+              </div>
+
+              {product.batches?.length ? (
+                <div className="catalog-batch-row">
+                  {product.batches.map((batch) => {
+                    const remainingDays = calculateRemainingDays(batch.expiryDate);
+
+                    return (
+                      <article key={batch.batchId} className="catalog-batch-card">
+                        <div className="catalog-card-header">
+                          <div>
+                            <h4>{batch.batchCode}</h4>
+                            <p>{formatDateValue(batch.manufactureDate)} - {formatDateValue(batch.expiryDate)}</p>
+                          </div>
+                          <span className="catalog-badge">{batch.labelCount || 0} labels</span>
+                        </div>
+
+                        <div className="catalog-batch-summary">
+                          <div className="catalog-stat">
+                            <ShieldCheck size={16} />
+                            <span>Created {formatDateTimeValue(batch.createdAt)}</span>
+                          </div>
+                          <div className="catalog-stat">
+                            <Sticker size={16} />
+                            <span>{remainingDays == null ? "Pending expiry" : `${remainingDays} day(s) left`}</span>
+                          </div>
+                        </div>
+
+                        <div className="catalog-batch-label-scroll">
+                          {batch.labels?.length ? (
+                            batch.labels.map((label) => <LabelSticker key={label.labelId} label={label} />)
+                          ) : (
+                            <div className="catalog-empty-labels">No generated label images for this batch yet.</div>
+                          )}
+                        </div>
+
+                        <div className="catalog-action-row">
+                          <button
+                            type="button"
+                            className="catalog-detail-button"
+                            onClick={() => setSelectedBatchDetail({ batch, product })}>
+                            View Batch
+                          </button>
+
+                          <button
+                            type="button"
+                            className="catalog-export-button"
+                            disabled={activeExportBatchId === batch.batchId}
+                            onClick={() => onBatchExport(batch.batchId)}>
+                            {activeExportBatchId === batch.batchId ? "EXPORTING..." : "Export ZIP"}
+                          </button>
+                        </div>
+                      </article>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="empty-state-card">
+                  <Package size={24} />
+                  <h4>No batches yet</h4>
+                  <p>Create or upload a batch in the Issue Authentication QR tab to populate this catalog.</p>
+                </div>
+              )}
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div className="empty-state-card">
+          <Package size={26} />
+          <h4>No products issued yet</h4>
+          <p>Create a product in the Issue Authentication QR tab to generate authentication labels for each batch.</p>
+        </div>
+      )}
+
+      <BatchDetailModal
+        batchDetail={selectedBatchDetail}
+        activeExportBatchId={activeExportBatchId}
+        onBatchExport={onBatchExport}
+        onClose={() => setSelectedBatchDetail(null)}
+      />
     </div>
   );
 }
@@ -191,9 +567,15 @@ function ManageProductsSection() {
 // Nhan vao: du lieu form QR, file Excel va cac handler xu ly upload/submit.
 // Tra ve: JSX hai khu vuc tao QR thu cong va dang ky batch.
 function IssueQrSection({
+  brandInfo,
   excelFile,
   excelInputRef,
+  isBatchUploading,
   isDragging,
+  isProductSaving,
+  isTemplateDownloading,
+  latestIssuedQrAssets,
+  productFeedback,
   qrForm,
   onExcelChange,
   onExcelDragLeave,
@@ -203,7 +585,7 @@ function IssueQrSection({
   onExcelSubmit,
   onManualQrSubmit,
   onQrFormChange,
-  onSystemGeneratedToggle,
+  onTemplateDownload,
 }) {
   return (
     <div className="qr-creation-grid">
@@ -212,56 +594,72 @@ function IssueQrSection({
           <Package size={20} color="#3f78c9" /> Manual Product Entry
         </h4>
         <form onSubmit={onManualQrSubmit}>
-          <div className="input-group" style={{ marginBottom: "15px" }}>
-            <label>Product Name *</label>
-            <input type="text" required placeholder="Example: ABC Facial Cleanser" value={qrForm.productName} onChange={(event) => onQrFormChange("productName", event.target.value)} className="input-wrap" style={INPUT_STYLE} />
-          </div>
+          <div className="creation-form-grid">
+            <div className="input-group">
+              <label>Product Name *</label>
+              <input type="text" required placeholder="Example: ABC Facial Cleanser" value={qrForm.productName} onChange={(event) => onQrFormChange("productName", event.target.value)} className="input-wrap" style={INPUT_STYLE} />
+            </div>
 
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "15px",
-              marginBottom: "15px",
-              background: "#f8fbff",
-              padding: "12px",
-              borderRadius: "10px",
-              border: "1px solid #e2e8f0",
-            }}>
-            <label className="toggle-switch">
-              <input type="checkbox" checked={qrForm.isSystemGenerated} onChange={(event) => onSystemGeneratedToggle(event.target.checked)} />
-              <span className="slider"></span>
-            </label>
-            <div>
-              <span
-                style={{
-                  fontWeight: 700,
-                  color: "#1e293b",
-                  display: "block",
-                  fontSize: "14px",
-                }}>
-                Let the system generate the QR code
-              </span>
-              <span style={{ fontSize: "12px", color: "#64748b" }}>This creates a random and more secure token automatically.</span>
+            <div className="input-group">
+              <label>Brand</label>
+              <div className="brand-readonly-shell">{brandInfo.businessName || "Pending update"}</div>
+            </div>
+
+            <div className="input-group">
+              <label>Manufacturer *</label>
+              <input type="text" required placeholder="Example: ABC Factory" value={qrForm.manufacturerName} onChange={(event) => onQrFormChange("manufacturerName", event.target.value)} style={INPUT_STYLE} />
+            </div>
+
+            <div className="input-group">
+              <label>Country of Origin *</label>
+              <input type="text" required placeholder="Example: Vietnam" value={qrForm.originCountry} onChange={(event) => onQrFormChange("originCountry", event.target.value)} style={INPUT_STYLE} />
+            </div>
+
+            <div className="input-group">
+              <label>Manufacture Date *</label>
+              <input type="date" required value={qrForm.manufactureDate} onChange={(event) => onQrFormChange("manufactureDate", event.target.value)} style={INPUT_STYLE} />
+            </div>
+
+            <div className="input-group">
+              <label>Expiry Date *</label>
+              <input type="date" required value={qrForm.expiryDate} onChange={(event) => onQrFormChange("expiryDate", event.target.value)} style={INPUT_STYLE} />
+            </div>
+
+            <div className="input-group">
+              <label>General Info URL</label>
+              <input type="url" placeholder="https://your-brand.com/product-details" value={qrForm.generalInfoUrl} onChange={(event) => onQrFormChange("generalInfoUrl", event.target.value)} style={INPUT_STYLE} />
+            </div>
+
+            <div className="input-group">
+              <label>Suspicious Scan Limit</label>
+              <input type="number" min="1" max="999999999" value={qrForm.scanLimit} onChange={(event) => onQrFormChange("scanLimit", event.target.value)} style={INPUT_STYLE} />
+            </div>
+
+            <div className="input-group">
+              <label>Authentication Label Quantity *</label>
+              <input type="number" min="1" max="500" value={qrForm.issueQuantity} onChange={(event) => onQrFormChange("issueQuantity", event.target.value)} style={INPUT_STYLE} />
+            </div>
+
+            <div className="input-group input-group-full">
+              <label>Quality Certifications</label>
+              <textarea rows="4" placeholder="Example: ISO 22000, GMP, HACCP" value={qrForm.qualityCertifications} onChange={(event) => onQrFormChange("qualityCertifications", event.target.value)} className="creation-textarea" />
+            </div>
+
+            <div className="input-group input-group-full">
+              <label>Description</label>
+              <textarea rows="4" placeholder="Short product summary shown after scanning." value={qrForm.description} onChange={(event) => onQrFormChange("description", event.target.value)} className="creation-textarea" />
             </div>
           </div>
 
-          {!qrForm.isSystemGenerated ? (
-            <div className="input-group" style={{ marginBottom: "15px" }}>
-              <label>Your Custom QR Payload *</label>
-              <input type="text" required placeholder="Example: BRAND-PRODUCT-001" value={qrForm.qrCodeString} onChange={(event) => onQrFormChange("qrCodeString", event.target.value)} style={{ ...INPUT_STYLE, background: "#fff" }} />
-            </div>
-          ) : null}
+          {productFeedback.message ? <div className={`profile-feedback ${productFeedback.type}`}>{productFeedback.message}</div> : null}
 
-          <div className="input-group" style={{ marginBottom: "20px" }}>
-            <label>Suspicious Scan Limit</label>
-            <input type="number" min="1" max="100" value={qrForm.scanLimit} onChange={(event) => onQrFormChange("scanLimit", event.target.value)} style={INPUT_STYLE} />
-          </div>
-
-          <button type="submit" className="save-btn" style={{ width: "100%" }}>
-            CREATE QR CODE
+          <button type="submit" className="save-btn" style={{ width: "100%", marginTop: "20px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "8px" }} disabled={isProductSaving}>
+            <Save size={16} />
+            {isProductSaving ? "CREATING..." : "CREATE AUTHENTICATION QR BATCH"}
           </button>
         </form>
+
+        <LatestIssuedQrPanel latestIssuedQrAssets={latestIssuedQrAssets} />
       </div>
 
       <div className="creation-section">
@@ -309,100 +707,33 @@ function IssueQrSection({
           type="button"
           onClick={onExcelSubmit}
           className="save-btn"
-          disabled={!excelFile}
+          disabled={!excelFile || isBatchUploading}
           style={{
             width: "100%",
             marginTop: "20px",
             background: excelFile ? "linear-gradient(180deg, #34d399 0%, #10b981 100%)" : "#cbd5e1",
             boxShadow: "none",
           }}>
-          UPLOAD AND PROCESS BATCH
+          {isBatchUploading ? "UPLOADING..." : "UPLOAD AND PROCESS BATCH"}
         </button>
 
         <div style={{ textAlign: "center", marginTop: "15px" }}>
-          <a
-            href="#"
+          <button
+            type="button"
+            onClick={onTemplateDownload}
+            disabled={isTemplateDownloading}
             style={{
               color: "#3f78c9",
               fontSize: "13px",
               fontWeight: 600,
               textDecoration: "underline",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
             }}>
-            Download the Excel Template
-          </a>
+            {isTemplateDownloading ? "Downloading template..." : "Download the Excel Template"}
+          </button>
         </div>
-      </div>
-    </div>
-  );
-}
-
-// Ham nay dung de render tab cai dat thong tin brand va doi mat khau.
-// Nhan vao: du lieu brand, du lieu mat khau va cac handler cap nhat/submit.
-// Tra ve: JSX form settings cua brand.
-function SettingsSection({ brandInfo, passwords, showPasswords, onBrandInfoChange, onPasswordChange, onPasswordVisibilityToggle, onSettingsSubmit }) {
-  return (
-    <form className="settings-form" style={{ maxWidth: "100%" }} onSubmit={onSettingsSubmit}>
-      <div className="settings-group">
-        <h4>
-          <Building size={18} /> Business Profile
-        </h4>
-        <div className="input-grid" style={GRID_STYLE}>
-          <div className="input-group">
-            <label>Business Name</label>
-            <input type="text" value={brandInfo.businessName} onChange={(event) => onBrandInfoChange("businessName", event.target.value)} style={INPUT_STYLE} />
-          </div>
-          <div className="input-group">
-            <label>Contact Email</label>
-            <input type="email" value={brandInfo.email} onChange={(event) => onBrandInfoChange("email", event.target.value)} style={INPUT_STYLE} />
-          </div>
-          <div className="input-group">
-            <label>Phone Number</label>
-            <input type="text" value={brandInfo.phone} onChange={(event) => onBrandInfoChange("phone", event.target.value)} style={INPUT_STYLE} />
-          </div>
-          <div className="input-group" style={{ gridColumn: "1 / -1" }}>
-            <label>Business Address</label>
-            <input type="text" value={brandInfo.address} onChange={(event) => onBrandInfoChange("address", event.target.value)} style={INPUT_STYLE} />
-          </div>
-          <div className="input-group">
-            <label>Website</label>
-            <input type="text" value={brandInfo.website} onChange={(event) => onBrandInfoChange("website", event.target.value)} style={INPUT_STYLE} />
-          </div>
-          <div className="input-group">
-            <label>Tax ID</label>
-            <input type="text" value={brandInfo.taxId} onChange={(event) => onBrandInfoChange("taxId", event.target.value)} style={INPUT_STYLE} />
-          </div>
-        </div>
-      </div>
-
-      <div className="settings-group">
-        <h4>
-          <Settings size={18} /> Change Password
-        </h4>
-        <div className="input-grid" style={GRID_STYLE}>
-          <PasswordField label="New Password" value={passwords.new} showValue={showPasswords.new} onChange={(event) => onPasswordChange("new", event.target.value)} onToggleVisibility={() => onPasswordVisibilityToggle("new")} />
-          <PasswordField label="Confirm Password" value={passwords.confirm} showValue={showPasswords.confirm} onChange={(event) => onPasswordChange("confirm", event.target.value)} onToggleVisibility={() => onPasswordVisibilityToggle("confirm")} />
-        </div>
-      </div>
-
-      <button type="submit" className="save-btn">
-        SAVE CHANGES
-      </button>
-    </form>
-  );
-}
-
-// Ham nay dung de render mot o nhap mat khau co nut an hien gia tri.
-// Nhan vao: label, value, showValue va cac handler thay doi/hien thi mat khau.
-// Tra ve: JSX field mat khau dung chung trong settings brand.
-function PasswordField({ label, value, showValue, onChange, onToggleVisibility }) {
-  return (
-    <div className="input-group pw-input-wrap">
-      <label>{label}</label>
-      <div style={{ position: "relative" }}>
-        <input type={showValue ? "text" : "password"} placeholder="........" value={value} onChange={onChange} style={INPUT_STYLE} />
-        <button type="button" className="toggle-pw-btn" onClick={onToggleVisibility} style={TOGGLE_BUTTON_STYLE}>
-          {showValue ? <EyeOff size={18} /> : <Eye size={18} />}
-        </button>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const scanRoutes = require("./routes/scanRoutes");
+const userRoutes = require("./routes/userRoutes");
 const { startQrProcessingWorker } = require("./app/qrProcessingWorker");
 const path = require("path");
 require("dotenv").config();
@@ -20,11 +21,15 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/auth", authRoutes);
+app.use("/api", userRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/scan", scanRoutes);
 app.use("/pictures", express.static(path.join(__dirname, "pictures")));
+app.use("/QRURL", express.static(path.join(__dirname, "app", "QRURL")));
 app.use("/QRScan", express.static(path.join(__dirname, "app", "QRScan")));
+app.use("/QRSCANUSER", express.static(path.join(__dirname, "app", "QRSCANUSER")));
 app.use("/ProcessedQRScan", express.static(path.join(__dirname, "app", "ProcessedQRScan")));
+app.use("/BrandBatchAssets", express.static(path.join(__dirname, "app", "BrandBatchAssets")));
 
 const PORT = process.env.PORT || 5000;
 

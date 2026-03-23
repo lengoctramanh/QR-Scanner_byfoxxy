@@ -1,4 +1,4 @@
-import { Activity, ListTodo, ShieldAlert, Users } from "lucide-react";
+import { Link2, ShieldAlert, Users } from "lucide-react";
 
 export const ADMIN_PROFILE = {
   fullName: "Le Hoang Minh",
@@ -239,7 +239,6 @@ export const INITIAL_ACTIVE_SESSIONS = [
 
 export const TAB_ITEMS = [
   { key: "brands", label: "Brand Reviews", icon: ShieldAlert },
-  { key: "requests", label: "Approval Requests", icon: ListTodo },
-  { key: "monitoring", label: "QR Monitoring", icon: Activity },
+  { key: "website", label: "Website QR", icon: Link2 },
   { key: "system", label: "System Sessions", icon: Users },
 ];

@@ -1,308 +1,258 @@
-import { CheckSquare, Eye, Layers3, ListTodo, LogOut, MonitorSmartphone, ShieldAlert, TriangleAlert, Users, Waypoints } from "lucide-react";
+import {
+  Building2,
+  CheckSquare,
+  Globe,
+  Layers3,
+  Link2,
+  LogOut,
+  MonitorSmartphone,
+  ShieldAlert,
+  UserCog,
+  Users,
+} from "lucide-react";
 import AdminBrandRequestModal from "../components/admin/AdminBrandRequestModal";
 import AdminBrandReviewPanel from "../components/admin/AdminBrandReviewPanel";
-import { DetailModal, StatCard, StatusPill } from "../components/admin/AdminDashboardShared";
+import {
+  DetailModal,
+  EmptyState,
+  StatCard,
+  StatusPill,
+} from "../components/admin/AdminDashboardShared";
+import AdminWebsiteQrPanel from "../components/admin/AdminWebsiteQrPanel";
 import defaultAvatar from "../assets/image.png";
 import { TAB_ITEMS } from "../data/adminDashboardData";
 import useAdminDashboard from "../hooks/useAdminDashboard";
-import { describeMinutesRemaining, formatDateTime, formatGenderLabel, maskToken } from "../utils/adminDashboardUtils";
+import {
+  describeMinutesRemaining,
+  formatDateTime,
+  formatGenderLabel,
+  formatStatusLabel,
+} from "../utils/adminDashboardUtils";
 import "./AdminDashboard.css";
 import "./UserDashboard.css";
 
-// Ham nay dung de render bang dieu khien admin va ket noi giao dien voi hook du lieu live cho brand reviews.
+// Ham nay dung de render mot bang detail cho modal thong ke user/brand/admin.
+// Nhan vao: columns la cau hinh cot va rows la du lieu can hien thi.
+// Tra ve: JSX bang hoac empty state neu khong co du lieu.
+function AdminSummaryTable({ columns, rows, emptyTitle, emptyDescription }) {
+  if (!rows.length) {
+    return <EmptyState icon={Users} title={emptyTitle} description={emptyDescription} />;
+  }
+
+  return (
+    <div className="admin-table-shell">
+      <table className="admin-table admin-summary-table">
+        <thead>
+          <tr>
+            {columns.map((column) => (
+              <th key={column.key}>{column.label}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row, rowIndex) => (
+            <tr key={`${row.fullName || row.brandName || "row"}-${rowIndex}`}>
+              {columns.map((column) => (
+                <td key={column.key}>{column.render(row)}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// Ham nay dung de render dashboard admin va ket noi giao dien voi hook du lieu live.
 // Nhan vao: khong nhan props, du lieu duoc lay tu useAdminDashboard.
-// Tra ve: giao dien dashboard admin voi tab review live va cac khu vuc giam sat.
+// Tra ve: giao dien dashboard admin voi tab website QR, review brand va system sessions that.
 export default function AdminDashboard() {
   const {
-    activeAdminSessions,
     activeBrandActionId,
+    activeSessionActionId,
     activeSessions,
     activeTab,
     activityBanner,
     adminProfile,
-    approvalRequests,
     closeBrandReview,
-    filteredQrRows,
-    handleApprovalDecision,
+    closeSystemPanel,
     handleApproveBrandRequest,
-    handleQrRequestDecision,
     handleRejectBrandRequest,
     handleRevokeSession,
+    handleSaveWebsiteQr,
+    handleWebsiteUrlDraftChange,
     isBrandDetailLoading,
     isBrandQueueLoading,
+    isSystemLoading,
+    isWebsiteQrLoading,
+    isWebsiteQrSaving,
     openBrandReview,
-    pendingApprovalCount,
-    qrCodeRequests,
-    qrFilter,
-    qrOverviewRows,
+    openSystemPanel,
     selectedBrandRequestDetail,
-    selectedRequest,
+    selectedSystemPanel,
     setActiveTab,
-    setQrFilter,
-    setSelectedRequest,
     sortedBrandRequests,
-    suspiciousQrCount,
-    totalPublicScans,
+    totalAdmins,
+    totalBrands,
+    totalActiveSessions,
+    totalUsers,
+    systemAdmins,
+    systemBrands,
+    systemUsers,
+    websiteQrCurrent,
+    websiteQrHistory,
+    websiteQrUrlDraft,
+    websiteQrVersionCount,
   } = useAdminDashboard();
 
-  // Ham nay dung de render tab tong hop cac approval request va QR issuance request.
-  // Nhan vao: khong nhan tham so, doc du lieu mock tu hook admin.
-  // Tra ve: JSX chua hai bang request de admin theo doi.
-  const renderRequestTab = () => (
-    <div className="admin-tab-stack">
-      <section className="admin-panel-card">
-        <div className="admin-panel-heading">
-          <div>
-            <span className="admin-kicker">Approval Requests</span>
-            <h3>Product and batch change approvals</h3>
-          </div>
-        </div>
-        <div className="admin-table-shell">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Request</th>
-                <th>Requested by</th>
-                <th>Target</th>
-                <th>Reason</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {approvalRequests.map((requestRow) => (
-                <tr key={requestRow.approval_id}>
-                  <td>
-                    <div className="admin-cell-title">{requestRow.approval_id}</div>
-                    <div className="admin-cell-subtitle">{formatDateTime(requestRow.created_at)}</div>
-                  </td>
-                  <td>
-                    <div className="admin-cell-title">{requestRow.initiated_by_display}</div>
-                    <div className="admin-cell-subtitle">{requestRow.initiated_role}</div>
-                  </td>
-                  <td>
-                    <div className="admin-cell-title">{requestRow.target_table}</div>
-                    <div className="admin-cell-subtitle">{requestRow.target_id}</div>
-                  </td>
-                  <td>
-                    <div className="admin-clamp-text">{requestRow.change_reason}</div>
-                  </td>
-                  <td>
-                    <StatusPill value={requestRow.status} />
-                  </td>
-                  <td>
-                    <div className="admin-action-row">
-                      <button type="button" className="admin-action-btn ghost" onClick={() => setSelectedRequest({ type: "approval", data: requestRow })}>
-                        <Eye size={16} /> Details
-                      </button>
-                      <button type="button" className="admin-action-btn success" onClick={() => handleApprovalDecision(requestRow.approval_id, "APPROVED")}>
-                        Approve
-                      </button>
-                      <button type="button" className="admin-action-btn danger" onClick={() => handleApprovalDecision(requestRow.approval_id, "REJECTED")}>
-                        Reject
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      <section className="admin-panel-card">
-        <div className="admin-panel-heading">
-          <div>
-            <span className="admin-kicker">QR Issuance</span>
-            <h3>Brand QR generation requests</h3>
-          </div>
-        </div>
-        <div className="admin-table-shell">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Request</th>
-                <th>Brand / Batch</th>
-                <th>Quantity</th>
-                <th>Method</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {qrCodeRequests.map((requestRow) => (
-                <tr key={requestRow.request_id}>
-                  <td>
-                    <div className="admin-cell-title">{requestRow.request_id}</div>
-                    <div className="admin-cell-subtitle">{formatDateTime(requestRow.created_at)}</div>
-                  </td>
-                  <td>
-                    <div className="admin-cell-title">{requestRow.brand_name}</div>
-                    <div className="admin-cell-subtitle">
-                      {requestRow.product_name} / {requestRow.batch_code}
-                    </div>
-                  </td>
-                  <td>
-                    <div className="admin-cell-title">{requestRow.requested_quantity.toLocaleString("en-US")} codes</div>
-                    <div className="admin-cell-subtitle">{requestRow.product_id}</div>
-                  </td>
-                  <td>
-                    <StatusPill value={requestRow.generation_method} />
-                  </td>
-                  <td>
-                    <StatusPill value={requestRow.status} />
-                  </td>
-                  <td>
-                    <div className="admin-action-row">
-                      <button type="button" className="admin-action-btn ghost" onClick={() => setSelectedRequest({ type: "qr-request", data: requestRow })}>
-                        <Eye size={16} /> Details
-                      </button>
-                      <button type="button" className="admin-action-btn success" onClick={() => handleQrRequestDecision(requestRow.request_id, "APPROVED")}>
-                        Approve
-                      </button>
-                      <button type="button" className="admin-action-btn danger" onClick={() => handleQrRequestDecision(requestRow.request_id, "REJECTED")}>
-                        Reject
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </div>
+  // Ham nay dung de render tab quan ly URL website chinh va QR tuong ung cho admin.
+  // Nhan vao: khong nhan tham so, doc state va handlers tu useAdminDashboard.
+  // Tra ve: JSX panel nhap URL, preview QR va lich su phien ban.
+  const renderWebsiteTab = () => (
+    <AdminWebsiteQrPanel
+      currentConfig={websiteQrCurrent}
+      history={websiteQrHistory}
+      websiteUrl={websiteQrUrlDraft}
+      onWebsiteUrlChange={handleWebsiteUrlDraftChange}
+      onSave={handleSaveWebsiteQr}
+      isLoading={isWebsiteQrLoading}
+      isSaving={isWebsiteQrSaving}
+    />
   );
 
-  // Ham nay dung de render tab giam sat tong quan QR theo bo loc trang thai.
-  // Nhan vao: khong nhan tham so, doc qrFilter va filteredQrRows tu hook.
-  // Tra ve: JSX hien thi thong ke va bang overview cua QR.
-  const renderQrMonitoringTab = () => (
-    <section className="admin-panel-card">
-      <div className="admin-panel-heading">
-        <div>
-          <span className="admin-kicker">QR Risk Control</span>
-          <h3>Monitor the QR overview dataset</h3>
-        </div>
-        <div className="admin-filter-row">
-          {["ALL", "SUSPICIOUS", "NEW", "ACTIVATED", "BLOCKED"].map((filterValue) => (
-            <button key={filterValue} type="button" className={`admin-filter-chip ${qrFilter === filterValue ? "active" : ""}`} onClick={() => setQrFilter(filterValue)}>
-              {filterValue}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="admin-mini-stats">
-        <StatCard icon={TriangleAlert} title="Suspicious QR" value={suspiciousQrCount} detail="Repeated public scans that should be investigated first" tone="danger" />
-        <StatCard icon={Waypoints} title="Total public scans" value={totalPublicScans} detail="Combined public scan count across the current overview" tone="info" />
-        <StatCard icon={CheckSquare} title="Activated" value={qrOverviewRows.filter((item) => item.status === "ACTIVATED").length} detail="Codes that completed activation successfully" tone="success" />
-      </div>
-
-      <div className="admin-table-shell">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>QR Token</th>
-              <th>Status</th>
-              <th>Product / Batch</th>
-              <th>Scan counters</th>
-              <th>Timeline</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredQrRows.map((qrRow) => (
-              <tr key={qrRow.qr_id}>
-                <td>
-                  <div className="admin-cell-title">{maskToken(qrRow.qr_public_token)}</div>
-                  <div className="admin-cell-subtitle">{qrRow.source}</div>
-                </td>
-                <td>
-                  <StatusPill value={qrRow.status} />
-                </td>
-                <td>
-                  <div className="admin-cell-title">{qrRow.product_id}</div>
-                  <div className="admin-cell-subtitle">{qrRow.batch_id}</div>
-                </td>
-                <td>
-                  <div className="admin-cell-title">{qrRow.total_public_scans} public scans</div>
-                  <div className="admin-cell-subtitle">{qrRow.total_pin_attempts} pin attempts</div>
-                </td>
-                <td>
-                  <div className="admin-cell-title">Created: {formatDateTime(qrRow.created_at)}</div>
-                  <div className="admin-cell-subtitle">Activated: {formatDateTime(qrRow.activated_at)}</div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </section>
-  );
-
-  // Ham nay dung de render tab theo doi session dang hoat dong trong he thong.
-  // Nhan vao: khong nhan tham so, doc activeSessions va cac so lieu tinh san.
-  // Tra ve: JSX cua bang session va cac the thong ke he thong.
+  // Ham nay dung de render tab he thong gom tong quan role va cac session dang song.
+  // Nhan vao: khong nhan tham so, doc du lieu tu hook admin.
+  // Tra ve: JSX summary + bang session live + nut mo modal chi tiet.
   const renderSystemTab = () => (
     <section className="admin-panel-card">
       <div className="admin-panel-heading">
         <div>
-          <span className="admin-kicker">Live Sessions</span>
-          <h3>Active devices across the system</h3>
+          <span className="admin-kicker">System Session</span>
+          <h3>Live accounts and session control</h3>
         </div>
       </div>
 
       <div className="admin-mini-stats">
-        <StatCard icon={Users} title="Total sessions" value={activeSessions.length} detail="Sessions that are not revoked and not expired yet" tone="neutral" />
-        <StatCard icon={ShieldAlert} title="Admin sessions" value={activeAdminSessions} detail="High-privilege sessions that should be monitored closely" tone="info" />
-        <StatCard icon={MonitorSmartphone} title="Mobile users" value={activeSessions.filter((item) => item.device_type === "mobile").length} detail="Active sessions from mobile devices" tone="success" />
+        <button
+          type="button"
+          className="admin-stat-button"
+          onClick={() => openSystemPanel("users")}
+        >
+          <StatCard
+            icon={Users}
+            title="Total users"
+            value={totalUsers}
+            detail="Click to review names, status, and last sign-in only"
+            tone="info"
+          />
+        </button>
+        <button
+          type="button"
+          className="admin-stat-button"
+          onClick={() => openSystemPanel("brands")}
+        >
+          <StatCard
+            icon={Building2}
+            title="Total brands"
+            value={totalBrands}
+            detail="Click to review basic business data, tax ID, and email"
+            tone="warning"
+          />
+        </button>
+        <button
+          type="button"
+          className="admin-stat-button"
+          onClick={() => openSystemPanel("admins")}
+        >
+          <StatCard
+            icon={UserCog}
+            title="Total admins"
+            value={totalAdmins}
+            detail="Click to review privileged accounts and last sign-in"
+            tone="neutral"
+          />
+        </button>
       </div>
 
-      <div className="admin-table-shell">
-        <table className="admin-table">
-          <thead>
-            <tr>
-              <th>Account</th>
-              <th>Device</th>
-              <th>Location</th>
-              <th>Last active</th>
-              <th>Expires</th>
-              <th>Action</th>
-            </tr>
-          </thead>
-          <tbody>
-            {activeSessions.map((sessionRow) => (
-              <tr key={sessionRow.session_id}>
-                <td>
-                  <div className="admin-cell-title">{sessionRow.email}</div>
-                  <div className="admin-cell-subtitle">{sessionRow.role}</div>
-                </td>
-                <td>
-                  <div className="admin-cell-title">{sessionRow.device_info}</div>
-                  <div className="admin-cell-subtitle">{sessionRow.device_type}</div>
-                </td>
-                <td>
-                  <div className="admin-cell-title">{sessionRow.location_at_login}</div>
-                  <div className="admin-cell-subtitle">{sessionRow.ip_at_login}</div>
-                </td>
-                <td>
-                  <div className="admin-cell-title">{formatDateTime(sessionRow.last_active_at)}</div>
-                  <div className="admin-cell-subtitle">{formatDateTime(sessionRow.session_created)}</div>
-                </td>
-                <td>
-                  <div className="admin-cell-title">{formatDateTime(sessionRow.expires_at)}</div>
-                  <div className="admin-cell-subtitle">{describeMinutesRemaining(sessionRow.minutes_until_expire)}</div>
-                </td>
-                <td>
-                  <button type="button" className="admin-action-btn danger" onClick={() => handleRevokeSession(sessionRow.session_id)}>
-                    <LogOut size={16} /> Revoke
-                  </button>
-                </td>
+      {isSystemLoading ? (
+        <EmptyState
+          icon={MonitorSmartphone}
+          title="Loading live system data"
+          description="Please wait while the admin dashboard pulls session and account snapshots from the database."
+        />
+      ) : activeSessions.length > 0 ? (
+        <div className="admin-table-shell">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>Account</th>
+                <th>Device</th>
+                <th>Location</th>
+                <th>Last active</th>
+                <th>Expires</th>
+                <th>Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {activeSessions.map((sessionRow) => (
+                <tr key={sessionRow.session_id}>
+                  <td>
+                    <div className="admin-cell-title">{sessionRow.full_name}</div>
+                    <div className="admin-cell-subtitle">
+                      {sessionRow.email} / {sessionRow.role}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="admin-cell-title">{sessionRow.device_info}</div>
+                    <div className="admin-cell-subtitle">
+                      {formatStatusLabel(sessionRow.device_type || "unknown")}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="admin-cell-title">{sessionRow.location_at_login}</div>
+                    <div className="admin-cell-subtitle">{sessionRow.ip_at_login}</div>
+                  </td>
+                  <td>
+                    <div className="admin-cell-title">
+                      {formatDateTime(sessionRow.last_active_at)}
+                    </div>
+                    <div className="admin-cell-subtitle">
+                      Created: {formatDateTime(sessionRow.session_created)}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="admin-cell-title">
+                      {formatDateTime(sessionRow.expires_at)}
+                    </div>
+                    <div className="admin-cell-subtitle">
+                      {describeMinutesRemaining(sessionRow.minutes_until_expire)}
+                    </div>
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      className="admin-action-btn danger"
+                      onClick={() => handleRevokeSession(sessionRow.session_id)}
+                      disabled={activeSessionActionId === sessionRow.session_id}
+                    >
+                      <LogOut size={16} />
+                      {activeSessionActionId === sessionRow.session_id
+                        ? "Revoking..."
+                        : "Revoke"}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <EmptyState
+          icon={MonitorSmartphone}
+          title="No active sessions"
+          description="There are currently no live sessions in the database snapshot."
+        />
+      )}
     </section>
   );
 
@@ -311,10 +261,8 @@ export default function AdminDashboard() {
   // Tra ve: JSX cua tab hien tai tren dashboard admin.
   const renderActiveTab = () => {
     switch (activeTab) {
-      case "requests":
-        return renderRequestTab();
-      case "monitoring":
-        return renderQrMonitoringTab();
+      case "website":
+        return renderWebsiteTab();
       case "system":
         return renderSystemTab();
       case "brands":
@@ -334,6 +282,120 @@ export default function AdminDashboard() {
 
   const sidebarAvatar = adminProfile.avatarUrl || defaultAvatar;
 
+  const summaryModalConfig =
+    selectedSystemPanel === "users"
+      ? {
+          title: "Registered Users",
+          subtitle:
+            "This list intentionally hides email, phone, and internal IDs as requested.",
+          columns: [
+            {
+              key: "fullName",
+              label: "Name",
+              render: (row) => <div className="admin-cell-title">{row.fullName}</div>,
+            },
+            {
+              key: "gender",
+              label: "Gender",
+              render: (row) => (
+                <div className="admin-cell-subtitle">{formatGenderLabel(row.gender)}</div>
+              ),
+            },
+            {
+              key: "status",
+              label: "Status",
+              render: (row) => <StatusPill value={row.status} />,
+            },
+            {
+              key: "lastLoginAt",
+              label: "Last Sign-In",
+              render: (row) => (
+                <div className="admin-cell-subtitle">{formatDateTime(row.lastLoginAt)}</div>
+              ),
+            },
+          ],
+          rows: systemUsers,
+          emptyTitle: "No users found",
+          emptyDescription: "The database does not contain any user accounts yet.",
+        }
+      : selectedSystemPanel === "brands"
+        ? {
+            title: "Registered Brands",
+            subtitle: "Brand owners, tax IDs, and business emails pulled from the database.",
+            columns: [
+              {
+                key: "brandName",
+                label: "Brand",
+                render: (row) => (
+                  <>
+                    <div className="admin-cell-title">{row.brandName}</div>
+                    <div className="admin-cell-subtitle">{row.ownerName}</div>
+                  </>
+                ),
+              },
+              {
+                key: "taxId",
+                label: "Tax ID",
+                render: (row) => <div className="admin-cell-subtitle">{row.taxId}</div>,
+              },
+              {
+                key: "email",
+                label: "Email",
+                render: (row) => <div className="admin-cell-subtitle">{row.email}</div>,
+              },
+              {
+                key: "status",
+                label: "Status",
+                render: (row) => (
+                  <div className="admin-summary-stack">
+                    <StatusPill value={row.status} />
+                    <span className="admin-cell-subtitle">
+                      {row.verified ? "Verified" : formatStatusLabel(row.verificationStatus)}
+                    </span>
+                  </div>
+                ),
+              },
+            ],
+            rows: systemBrands,
+            emptyTitle: "No brands found",
+            emptyDescription: "The database does not contain any approved brand accounts yet.",
+          }
+        : selectedSystemPanel === "admins"
+          ? {
+              title: "Administrator Accounts",
+              subtitle: "High-privilege accounts currently stored in the database.",
+              columns: [
+                {
+                  key: "fullName",
+                  label: "Name",
+                  render: (row) => <div className="admin-cell-title">{row.fullName}</div>,
+                },
+                {
+                  key: "gender",
+                  label: "Gender",
+                  render: (row) => (
+                    <div className="admin-cell-subtitle">{formatGenderLabel(row.gender)}</div>
+                  ),
+                },
+                {
+                  key: "status",
+                  label: "Status",
+                  render: (row) => <StatusPill value={row.status} />,
+                },
+                {
+                  key: "lastLoginAt",
+                  label: "Last Sign-In",
+                  render: (row) => (
+                    <div className="admin-cell-subtitle">{formatDateTime(row.lastLoginAt)}</div>
+                  ),
+                },
+              ],
+              rows: systemAdmins,
+              emptyTitle: "No admins found",
+              emptyDescription: "There are currently no administrator accounts in the database.",
+            }
+          : null;
+
   return (
     <main className="dashboard-main admin-dashboard">
       <div className="dashboard-layout admin-dashboard-layout">
@@ -348,7 +410,9 @@ export default function AdminDashboard() {
                   event.currentTarget.src = defaultAvatar;
                 }}
               />
-              <span className="admin-role-badge">{adminProfile.role === "admin" ? "Admin" : adminProfile.role}</span>
+              <span className="admin-role-badge">
+                {adminProfile.role === "admin" ? "Admin" : adminProfile.role}
+              </span>
             </div>
             <h2>{adminProfile.fullName}</h2>
             <p>{adminProfile.email || "No email available"}</p>
@@ -365,6 +429,12 @@ export default function AdminDashboard() {
             <div className="admin-sidebar-item">
               <Layers3 size={16} /> Last sign-in: {formatDateTime(adminProfile.lastLoginAt)}
             </div>
+            <div className="admin-sidebar-item">
+              <Link2 size={16} /> Website QR:{" "}
+              {websiteQrCurrent
+                ? `Version ${websiteQrCurrent.changeNumber}`
+                : "Not configured"}
+            </div>
           </div>
 
           <div className="admin-sidebar-grid">
@@ -373,15 +443,15 @@ export default function AdminDashboard() {
               <small>Brand queue</small>
             </div>
             <div className="admin-side-metric">
-              <span>{pendingApprovalCount}</span>
-              <small>Open approvals</small>
+              <span>{websiteQrVersionCount}</span>
+              <small>URL QR versions</small>
             </div>
             <div className="admin-side-metric">
-              <span>{suspiciousQrCount}</span>
-              <small>Suspicious QR</small>
+              <span>{totalUsers}</span>
+              <small>Registered users</small>
             </div>
             <div className="admin-side-metric">
-              <span>{activeSessions.length}</span>
+              <span>{totalActiveSessions}</span>
               <small>Live sessions</small>
             </div>
           </div>
@@ -391,23 +461,52 @@ export default function AdminDashboard() {
           <div className="admin-hero">
             <div>
               <span className="admin-kicker">Admin Command Center</span>
-              <h1>Control approvals, QR risk, and active system sessions</h1>
+              <h1>Control brand reviews, website QR, and live system health</h1>
               <p>{activityBanner}</p>
             </div>
           </div>
 
           <div className="admin-overview-grid">
-            <StatCard icon={CheckSquare} title="Brands to review" value={sortedBrandRequests.length} detail="Live queue from brand_registration_requests" tone="warning" />
-            <StatCard icon={ListTodo} title="Open requests" value={pendingApprovalCount} detail="approval_requests + qr_code_requests" tone="info" />
-            <StatCard icon={TriangleAlert} title="QR alerts" value={suspiciousQrCount} detail="Current suspicious QR overview" tone="danger" />
-            <StatCard icon={Users} title="Active sessions" value={activeSessions.length} detail="Current active session snapshot" tone="neutral" />
+            <StatCard
+              icon={CheckSquare}
+              title="Brands to review"
+              value={sortedBrandRequests.length}
+              detail="Live queue from brand_registration_requests"
+              tone="warning"
+            />
+            <StatCard
+              icon={Globe}
+              title="Website QR versions"
+              value={websiteQrVersionCount}
+              detail="Saved versions from website_qr_configs"
+              tone="info"
+            />
+            <StatCard
+              icon={Users}
+              title="Total users"
+              value={totalUsers}
+              detail="Registered user accounts from the database"
+              tone="success"
+            />
+            <StatCard
+              icon={MonitorSmartphone}
+              title="Active sessions"
+              value={totalActiveSessions}
+              detail="Current active session snapshot"
+              tone="neutral"
+            />
           </div>
 
           <div className="tab-nav admin-tab-nav">
             {TAB_ITEMS.map((tabItem) => {
               const Icon = tabItem.icon;
               return (
-                <button key={tabItem.key} type="button" className={`tab-btn ${activeTab === tabItem.key ? "active" : ""}`} onClick={() => setActiveTab(tabItem.key)}>
+                <button
+                  key={tabItem.key}
+                  type="button"
+                  className={`tab-btn ${activeTab === tabItem.key ? "active" : ""}`}
+                  onClick={() => setActiveTab(tabItem.key)}
+                >
                   <Icon size={18} /> {tabItem.label}
                 </button>
               );
@@ -427,47 +526,18 @@ export default function AdminDashboard() {
         onReject={handleRejectBrandRequest}
       />
 
-      {selectedRequest ? (
-        <DetailModal title={selectedRequest.type === "approval" ? selectedRequest.data.approval_id : selectedRequest.data.request_id} subtitle={selectedRequest.type === "approval" ? "Approval Request Snapshot" : "QR Code Request Snapshot"} onClose={() => setSelectedRequest(null)}>
-          {selectedRequest.type === "approval" ? (
-            <div className="admin-json-grid">
-              <div className="admin-json-card">
-                <h4>Original data</h4>
-                <pre>{JSON.stringify(selectedRequest.data.original_data, null, 2)}</pre>
-              </div>
-              <div className="admin-json-card">
-                <h4>Proposed changes</h4>
-                <pre>{JSON.stringify(selectedRequest.data.proposed_changes, null, 2)}</pre>
-              </div>
-            </div>
-          ) : (
-            <div className="admin-detail-grid">
-              <div className="admin-detail-card">
-                <span>Brand</span>
-                <strong>{selectedRequest.data.brand_name}</strong>
-              </div>
-              <div className="admin-detail-card">
-                <span>Product</span>
-                <strong>{selectedRequest.data.product_name}</strong>
-              </div>
-              <div className="admin-detail-card">
-                <span>Batch</span>
-                <strong>{selectedRequest.data.batch_code}</strong>
-              </div>
-              <div className="admin-detail-card">
-                <span>Output file</span>
-                <strong>{selectedRequest.data.output_file_url || "Not generated yet"}</strong>
-              </div>
-              <div className="admin-detail-card wide">
-                <span>Brand note</span>
-                <strong>{selectedRequest.data.brand_note}</strong>
-              </div>
-              <div className="admin-detail-card wide">
-                <span>Admin note</span>
-                <strong>{selectedRequest.data.admin_note || "Not processed yet"}</strong>
-              </div>
-            </div>
-          )}
+      {summaryModalConfig ? (
+        <DetailModal
+          title={summaryModalConfig.title}
+          subtitle={summaryModalConfig.subtitle}
+          onClose={closeSystemPanel}
+        >
+          <AdminSummaryTable
+            columns={summaryModalConfig.columns}
+            rows={summaryModalConfig.rows}
+            emptyTitle={summaryModalConfig.emptyTitle}
+            emptyDescription={summaryModalConfig.emptyDescription}
+          />
         </DetailModal>
       ) : null}
     </main>

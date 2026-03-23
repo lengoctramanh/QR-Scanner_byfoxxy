@@ -6,31 +6,7 @@ const userModel = require("../models/userModel");
 const passwordUtil = require("../utils/passwordUtil");
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// Ham nay dung de chuan hoa thong tin lien he dang ky thanh cap email/phone luu DB.
-// Nhan vao: emailOrPhone la gia tri nguoi dung nhap trong form dang ky.
-// Tra ve: object chua email va phone da duoc chuan hoa; nem loi neu du lieu rong.
-const normalizeContact = (emailOrPhone) => {
-  const normalizedValue = String(emailOrPhone || "")
-    .trim()
-    .toLowerCase();
-
-  if (!normalizedValue) {
-    throw new Error("emailOrPhone is required");
-  }
-
-  if (EMAIL_PATTERN.test(normalizedValue)) {
-    return {
-      email: normalizedValue,
-      phone: null,
-    };
-  }
-
-  return {
-    email: `phone_${normalizedValue}@qr.local`,
-    phone: normalizedValue,
-  };
-};
+const PHONE_PATTERN = /^\+?[0-9][0-9\s-]{6,19}$/;
 
 const accountService = {
   // Ham nay dung de kiem tra email hoac so dien thoai da ton tai trong bang accounts hay chua.
@@ -48,8 +24,54 @@ const accountService = {
 
     try {
       const accountId = createUUID();
-      const contact = normalizeContact(registrationPayload.emailOrPhone);
-      const passwordHash = await passwordUtil.hashPassword(registrationPayload.password, accountId);
+      const normalizedEmail = String(registrationPayload.email || "")
+        .trim()
+        .toLowerCase();
+      const normalizedPhone = String(registrationPayload.phone || "").trim() || null;
+
+      if (!EMAIL_PATTERN.test(normalizedEmail)) {
+        return {
+          isValid: false,
+          httpStatus: 400,
+          message: "Email format is invalid.",
+        };
+      }
+
+      if (normalizedPhone && !PHONE_PATTERN.test(normalizedPhone)) {
+        return {
+          isValid: false,
+          httpStatus: 400,
+          message: "Phone number format is invalid.",
+        };
+      }
+
+      const existingEmailAccount = await accountModel.findByEmail(normalizedEmail, {
+        executor: connection,
+      });
+
+      if (existingEmailAccount) {
+        return {
+          isValid: false,
+          httpStatus: 409,
+          message: "This email is already used by another account.",
+        };
+      }
+
+      if (normalizedPhone) {
+        const existingPhoneAccount = await accountModel.findByPhone(normalizedPhone, {
+          executor: connection,
+        });
+
+        if (existingPhoneAccount) {
+          return {
+            isValid: false,
+            httpStatus: 409,
+            message: "This phone number is already used by another account.",
+          };
+        }
+      }
+
+      const passwordHash = await passwordUtil.hashPassword(registrationPayload.password, normalizedEmail);
 
       await connection.beginTransaction();
 
@@ -59,11 +81,13 @@ const accountService = {
           fullName: registrationPayload.fullName,
           dob: registrationPayload.dob,
           gender: registrationPayload.gender || null,
-          email: contact.email,
-          phone: contact.phone,
+          email: normalizedEmail,
+          phone: normalizedPhone,
           passwordHash,
           role: "user",
           status: "active",
+          avatarUrl: registrationPayload.avatarUrl || null,
+          termsAccepted: registrationPayload.termsAccepted ?? true,
         },
         { executor: connection },
       );
@@ -76,6 +100,7 @@ const accountService = {
 
       return {
         isValid: true,
+        httpStatus: 201,
         message: "Registration successful.",
       };
     } catch (error) {

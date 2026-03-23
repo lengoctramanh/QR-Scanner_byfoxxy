@@ -33,6 +33,7 @@ const buildDbRow = (pair, options) => ({
   requestId: options.requestId,
   status: "NEW",
   effectiveFrom: options.effectiveFrom,
+  scanLimit: options.scanLimit,
 });
 
 // Ham nay dung de chuyen mot cap QR da sinh thanh dong du lieu de xuat/in.
@@ -131,6 +132,7 @@ const qrEngine = {
     requestId = null,
     source = "system_generated",
     effectiveFrom = null,
+    scanLimit = null,
     bcryptRounds = DEFAULT_BCRYPT_ROUNDS,
     publicBytes = DEFAULT_PUBLIC_BYTES,
     secretBytes = DEFAULT_SECRET_BYTES,
@@ -166,6 +168,7 @@ const qrEngine = {
         batchId,
         requestId,
         effectiveFrom,
+        scanLimit,
       })
     );
 
@@ -192,6 +195,7 @@ const qrEngine = {
       "request_id",
       "status",
       "effective_from",
+      "scan_limit",
     ];
 
     const values = dbRows.map((row) => [
@@ -204,6 +208,7 @@ const qrEngine = {
       row.requestId,
       row.status,
       row.effectiveFrom,
+      row.scanLimit,
     ]);
 
     return {

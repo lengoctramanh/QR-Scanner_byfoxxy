@@ -8,34 +8,12 @@ const { cleanupRegistrationAttachments, mapAttachmentUrlsToDescriptors, saveRegi
 const passwordUtil = require("../utils/passwordUtil");
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_PATTERN = /^\+?[0-9][0-9\s-]{6,19}$/;
 const REQUEST_STATUS = {
   ACCOUNT_CREATED: "ACCOUNT_CREATED",
   PENDING: "PENDING",
   REJECTED: "REJECTED",
   UNDER_REVIEW: "UNDER_REVIEW",
-};
-
-// Ham nay dung de chuan hoa email/phone cua yeu cau dang ky brand.
-// Nhan vao: emailOrPhone la du lieu lien he nguoi dang ky nhap vao.
-// Tra ve: object email/phone da chuan hoa, nem loi neu gia tri khong hop le.
-const normalizeContact = (emailOrPhone) => {
-  const normalizedValue = String(emailOrPhone || "").trim().toLowerCase();
-
-  if (!normalizedValue) {
-    throw new Error("emailOrPhone is required");
-  }
-
-  if (EMAIL_PATTERN.test(normalizedValue)) {
-    return {
-      email: normalizedValue,
-      phone: null,
-    };
-  }
-
-  return {
-    email: `phone_${normalizedValue}@qr.local`,
-    phone: normalizedValue,
-  };
 };
 
 // Ham nay dung de bo email gia tao tu phone khi tra du lieu ve API.
@@ -167,9 +145,26 @@ const brandRegistrationRequestService = {
     let hasStartedTransaction = false;
 
     try {
-      const contact = normalizeContact(registrationPayload.emailOrPhone);
-      const duplicateLookupValue = contact.phone || contact.email;
-      const accountExists = await accountModel.checkExist(duplicateLookupValue, {
+      const normalizedEmail = String(registrationPayload.email || "").trim().toLowerCase();
+      const normalizedPhone = String(registrationPayload.phone || "").trim() || null;
+
+      if (!EMAIL_PATTERN.test(normalizedEmail)) {
+        return {
+          isValid: false,
+          httpStatus: 400,
+          message: "Email format is invalid.",
+        };
+      }
+
+      if (normalizedPhone && !PHONE_PATTERN.test(normalizedPhone)) {
+        return {
+          isValid: false,
+          httpStatus: 400,
+          message: "Phone number format is invalid.",
+        };
+      }
+
+      const existingEmailAccount = await accountModel.findByEmail(normalizedEmail, {
         executor: connection,
       });
       const taxIdExists = await brandModel.checkTaxIdExists(registrationPayload.taxId, {
@@ -177,18 +172,32 @@ const brandRegistrationRequestService = {
       });
       const requestConflict = await brandRegistrationRequestModel.checkPendingConflict(
         {
-          email: contact.email,
-          phone: contact.phone,
+          email: normalizedEmail,
+          phone: normalizedPhone,
           taxId: registrationPayload.taxId,
         },
         { executor: connection },
       );
 
-      if (accountExists) {
+      if (existingEmailAccount) {
         return {
           isValid: false,
           httpStatus: 409,
-          message: "The email or phone number already exists in the system.",
+          message: "This email already exists in the system.",
+        };
+      }
+
+      if (normalizedPhone) {
+        const existingPhoneAccount = await accountModel.findByPhone(normalizedPhone, {
+          executor: connection,
+        });
+
+        if (existingPhoneAccount) {
+          return {
+            isValid: false,
+            httpStatus: 409,
+            message: "This phone number already exists in the system.",
+          };
         };
       }
 
@@ -211,7 +220,7 @@ const brandRegistrationRequestService = {
       const requestId = createUUID();
       const reservedAccountId = createUUID();
       const reservedBrandId = createUUID();
-      const passwordHash = await passwordUtil.hashPassword(registrationPayload.password, reservedAccountId);
+      const passwordHash = await passwordUtil.hashPassword(registrationPayload.password, normalizedEmail);
 
       createdRequestId = requestId;
       const attachmentUrls = await saveRegistrationAttachments(requestId, registrationPayload.attachments);
@@ -227,8 +236,8 @@ const brandRegistrationRequestService = {
           fullName: registrationPayload.fullName,
           dob: registrationPayload.dob,
           gender: registrationPayload.gender || null,
-          email: contact.email,
-          phone: contact.phone,
+          email: normalizedEmail,
+          phone: normalizedPhone,
           passwordHash,
           brandName: registrationPayload.brandName,
           taxId: registrationPayload.taxId,

@@ -26,9 +26,9 @@ const qrActivationModel = {
       const [result] = await executor.execute(query, [
         activationPayload.activationId,
         activationPayload.qrId,
-        activationPayload.activatedByAccountId,
-        activationPayload.activatedByFingerprintId,
-        activationPayload.activationIp,
+        activationPayload.activatedByAccountId ?? null,
+        activationPayload.activatedByFingerprintId ?? null,
+        activationPayload.activationIp ?? null,
       ]);
 
       return result.affectedRows > 0;

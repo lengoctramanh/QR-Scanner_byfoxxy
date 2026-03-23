@@ -1,4 +1,5 @@
 const db = require("../config/database");
+const SESSION_TTL_DAYS = 4;
 
 // Ham nay dung de chon executor phu hop cho query session, uu tien transaction neu co.
 // Nhan vao: executor la connection/query executor tuy chon.
@@ -82,13 +83,103 @@ const accountSessionModel = {
       const executor = getExecutor(options.executor);
       const query = `
         UPDATE account_sessions
-        SET last_active_at = CURRENT_TIMESTAMP
+        SET
+          last_active_at = CURRENT_TIMESTAMP,
+          expires_at = DATE_ADD(CURRENT_TIMESTAMP, INTERVAL ${SESSION_TTL_DAYS} DAY)
         WHERE session_id = ?
       `;
       const [result] = await executor.execute(query, [sessionId]);
       return result.affectedRows > 0;
     } catch (error) {
       console.error("Model Error (touchLastActive):", error);
+      throw error;
+    }
+  },
+
+  // Ham nay dung de revoke toan bo session dang ton tai cua mot tai khoan.
+  // Nhan vao: accountId, revokedReason va options co the chua executor.
+  // Tra ve: boolean cho biet co session nao bi cap nhat hay khong.
+  async revokeSessionsByAccountId(accountId, revokedReason, options = {}) {
+    try {
+      const executor = getExecutor(options.executor);
+      const query = `
+        UPDATE account_sessions
+        SET
+          is_revoked = TRUE,
+          revoked_at = CURRENT_TIMESTAMP,
+          revoked_reason = ?
+        WHERE account_id = ?
+          AND is_revoked = FALSE
+      `;
+      const [result] = await executor.execute(query, [revokedReason || "Session revoked.", accountId]);
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error("Model Error (revokeSessionsByAccountId):", error);
+      throw error;
+    }
+  },
+
+  // Ham nay dung de lay snapshot cac phien dang hoat dong kem thong tin account cho dashboard admin.
+  // Nhan vao: options co the chua executor de dung transaction khi can.
+  // Tra ve: mang session chua bi revoke va chua het han, sap xep theo lan hoat dong moi nhat.
+  async listActiveSessions(options = {}) {
+    try {
+      const executor = getExecutor(options.executor);
+      const query = `
+        SELECT
+          s.session_id,
+          s.account_id,
+          a.full_name,
+          a.email,
+          a.role,
+          a.status,
+          s.device_info,
+          s.device_type,
+          s.ip_at_login,
+          s.location_at_login,
+          s.created_at AS session_created,
+          s.last_active_at,
+          s.expires_at,
+          GREATEST(TIMESTAMPDIFF(MINUTE, CURRENT_TIMESTAMP, s.expires_at), 0) AS minutes_until_expire
+        FROM account_sessions AS s
+        INNER JOIN accounts AS a
+          ON a.account_id = s.account_id
+        WHERE s.is_revoked = FALSE
+          AND s.expires_at > CURRENT_TIMESTAMP
+        ORDER BY s.last_active_at DESC, s.created_at DESC
+      `;
+
+      const [rows] = await executor.execute(query);
+      return rows;
+    } catch (error) {
+      console.error("Model Error (listActiveSessions):", error);
+      throw error;
+    }
+  },
+
+  // Ham nay dung de thu hoi mot session cu the tu dashboard admin.
+  // Nhan vao: sessionId can revoke, revokedReason mo ta ly do va options co the chua executor.
+  // Tra ve: true neu lenh UPDATE co anh huong den session dang song.
+  async revokeSessionById(sessionId, revokedReason, options = {}) {
+    try {
+      const executor = getExecutor(options.executor);
+      const query = `
+        UPDATE account_sessions
+        SET
+          is_revoked = TRUE,
+          revoked_at = CURRENT_TIMESTAMP,
+          revoked_reason = ?
+        WHERE session_id = ?
+          AND is_revoked = FALSE
+      `;
+
+      const [result] = await executor.execute(query, [
+        revokedReason || "Revoked by admin.",
+        sessionId,
+      ]);
+      return result.affectedRows > 0;
+    } catch (error) {
+      console.error("Model Error (revokeSessionById):", error);
       throw error;
     }
   },

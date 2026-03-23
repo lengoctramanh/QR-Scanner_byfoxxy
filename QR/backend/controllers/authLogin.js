@@ -61,7 +61,7 @@ const authLogin = {
         });
       }
 
-      const result = await authService.getCurrentProfile(accountId);
+      const result = await authService.getCurrentProfile(accountId, req.auth);
 
       if (!result.isValid) {
         return res.status(result.httpStatus).json({

@@ -1,90 +1,121 @@
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_PATTERN = /^\+?[0-9][0-9\s-]{6,19}$/;
+const HTTPS_URL_PATTERN = /^https:\/\/[^\s]+$/i;
+
+const parseIsoDate = (dateValue) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(dateValue || "").trim())) {
+    return null;
+  }
+
+  const parsedDate = new Date(`${dateValue}T00:00:00`);
+  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
+};
+
+const getAllowedDobRange = () => {
+  const today = new Date();
+  const minDate = new Date(today);
+  const maxDate = new Date(today);
+
+  minDate.setFullYear(today.getFullYear() - 100);
+  maxDate.setFullYear(today.getFullYear() - 5);
+
+  return {
+    minDate,
+    maxDate,
+  };
+};
+
 // Ham nay dung de kiem tra du lieu form dang ky truoc khi gui len backend.
 // Nhan vao: data la object du lieu form, role la vai tro dang ky hien tai.
-// Tra ve: object gom isValid va message de thong bao ket qua kiem tra.
+// Tra ve: object gom isValid, errors va message dau tien cho UI.
 export const validateRegisterData = (data, role) => {
-  const {
-    password,
-    confirmPassword,
-    emailOrPhone,
-    fullName,
-    dob,
-    gender,
-    brandName,
-    taxId,
-    industry,
-    website,
-    attachments,
-    agreePolicy,
-  } = data;
+  const errors = {};
+  const { minDate, maxDate } = getAllowedDobRange();
+  const parsedDob = parseIsoDate(data.dob);
 
-  const minLength = 8;
-  const maxLength = 20;
-
-  if (!fullName || fullName.trim().length === 0) {
-    return { isValid: false, message: "Full name cannot be empty!" };
+  if (!String(data.fullName || "").trim()) {
+    errors.fullName = "Full name cannot be empty.";
+  } else if (String(data.fullName).trim().length > 100) {
+    errors.fullName = "Full name must not exceed 100 characters.";
   }
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  const phoneRegex = /^[0-9]{10,11}$/;
-
-  if (!emailRegex.test(emailOrPhone) && !phoneRegex.test(emailOrPhone)) {
-    return { isValid: false, message: "Invalid email or phone number!" };
+  if (!String(data.email || "").trim()) {
+    errors.email = "Email cannot be empty.";
+  } else if (String(data.email).trim().length > 100) {
+    errors.email = "Email must not exceed 100 characters.";
+  } else if (!EMAIL_PATTERN.test(String(data.email).trim())) {
+    errors.email = "Email format is invalid.";
   }
 
-  if (!dob) {
-    return { isValid: false, message: "Please select your date of birth!" };
+  if (String(data.phone || "").trim()) {
+    if (String(data.phone).trim().length > 20) {
+      errors.phone = "Phone number must not exceed 20 characters.";
+    } else if (!PHONE_PATTERN.test(String(data.phone).trim())) {
+      errors.phone = "Phone number format is invalid.";
+    }
   }
 
-  if (!password || password.length < minLength || password.length > maxLength) {
-    return {
-      isValid: false,
-      message: `Password must be between ${minLength} and ${maxLength} characters!`,
-    };
+  if (!parsedDob || parsedDob < minDate || parsedDob > maxDate) {
+    errors.dob = "Date of birth is not realistic.";
   }
 
-  if (password !== confirmPassword) {
-    return { isValid: false, message: "Confirm password does not match!" };
+  if (!String(data.gender || "").trim()) {
+    errors.gender = "Gender is required.";
   }
 
-  if (role === "user" && !gender) {
-    return { isValid: false, message: "Please select your gender!" };
+  if (!String(data.password || "").trim()) {
+    errors.password = "Password cannot be empty.";
+  } else if (String(data.password).length < 8) {
+    errors.password = "Password must contain at least 8 characters.";
+  }
+
+  if (!String(data.confirmPassword || "").trim()) {
+    errors.confirmPassword = "Confirm password cannot be empty.";
+  } else if (data.password !== data.confirmPassword) {
+    errors.confirmPassword = "Passwords do not match.";
+  }
+
+  if (!data.termsAccepted) {
+    errors.termsAccepted = "You must agree to the Terms of Service and Privacy Policy.";
   }
 
   if (role === "brand") {
-    if (!brandName || brandName.trim().length === 0) {
-      return { isValid: false, message: "Brand Name cannot be empty!" };
+    if (!String(data.brandName || "").trim()) {
+      errors.brandName = "Brand name cannot be empty.";
+    } else if (String(data.brandName).trim().length > 300) {
+      errors.brandName = "Brand name must not exceed 300 characters.";
     }
 
-    if (!taxId || taxId.trim().length === 0) {
-      return { isValid: false, message: "Tax ID is required for business!" };
+    if (!String(data.taxId || "").trim()) {
+      errors.taxId = "Tax ID cannot be empty.";
+    } else if (String(data.taxId).trim().length > 50) {
+      errors.taxId = "Tax ID must not exceed 50 characters.";
     }
 
-    if (!industry) {
-      return { isValid: false, message: "Please select an industry!" };
+    if (!String(data.productCategories || "").trim()) {
+      errors.productCategories = "Product categories cannot be empty.";
+    } else if (String(data.productCategories).trim().length > 100) {
+      errors.productCategories = "Product categories must not exceed 100 characters.";
     }
 
-    if (website && website.trim().length > 0) {
-      const urlPattern = /^(https?:\/\/)?(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&//=]*)$/;
-
-      if (!urlPattern.test(website)) {
-        return { isValid: false, message: "Invalid website URL format!" };
-      }
+    if (!String(data.industry || "").trim()) {
+      errors.industry = "Industry cannot be empty.";
+    } else if (String(data.industry).trim().length > 100) {
+      errors.industry = "Industry must not exceed 100 characters.";
     }
 
-    if (!attachments || attachments.length === 0) {
-      return {
-        isValid: false,
-        message: "Please upload at least 1 business document!",
-      };
+    if (String(data.website || "").trim() && !HTTPS_URL_PATTERN.test(String(data.website).trim())) {
+      errors.website = "Website must start with https://";
+    }
+
+    if (!Array.isArray(data.attachments) || data.attachments.length === 0) {
+      errors.attachments = "At least 1 verification document is required.";
     }
   }
 
-  if (!agreePolicy) {
-    return {
-      isValid: false,
-      message: "You must agree to the Terms of Service and Privacy Policy!",
-    };
-  }
-
-  return { isValid: true, message: "Validation successful!" };
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors,
+    message: Object.values(errors)[0] || "Validation successful.",
+  };
 };

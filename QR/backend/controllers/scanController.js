@@ -37,10 +37,12 @@ const extractIpAddress = (req) => {
 // Nhan vao: req la request hien tai.
 // Tra ve: object scanContext chuan hoa de service scan su dung.
 const extractScanContext = (req) => ({
-  accountId: limitString(
-    pickString(req.body?.accountId, req.headers["x-account-id"]),
-    50
-  ),
+  accountId: limitString(req.auth?.accountId || null, 50),
+  role: req.auth?.role || null,
+  sessionId: limitString(req.auth?.sessionId || null, 50),
+  sessionExpiresAt: req.auth?.expiresAt || null,
+  authMode: req.auth?.accountId ? "authenticated" : req.authState?.mode || "guest",
+  authReason: req.authState?.reason || null,
   fingerprintId: limitString(
     pickString(req.body?.fingerprintId, req.headers["x-fingerprint-id"]),
     50
@@ -57,6 +59,26 @@ const extractScanContext = (req) => ({
 });
 
 const scanController = {
+  // Ham nay dung de nhan noi dung QR da giai ma va tu dong xu ly dung loai scan.
+  // Nhan vao: req.body.qrContent, metadata request va res de gui phan hoi.
+  // Tac dong: goi scanService.resolveScanContent va tra JSON thong nhat cho frontend.
+  async resolveScan(req, res) {
+    try {
+      const result = await scanService.resolveScanContent(
+        req.body?.qrContent,
+        extractScanContext(req)
+      );
+
+      return res.status(result.httpStatus).json(result.body);
+    } catch (error) {
+      console.error("Controller Error (resolveScan):", error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal Server Error while resolving the QR content.",
+      });
+    }
+  },
+
   // Ham nay dung de xu ly API quet public token cua QR.
   // Nhan vao: req.params.token, metadata trong request va res de gui ket qua.
   // Tac dong: goi scanService.handlePublicScan va tra JSON phan hoi.
@@ -110,6 +132,43 @@ const scanController = {
       return res.status(500).json({
         success: false,
         message: "Internal Server Error while storing the scan image.",
+      });
+    }
+  },
+
+  // Ham nay dung de nhan anh va cho backend tu giai ma + resolve QR trong mot request dong bo.
+  // Nhan vao: req.file, req.body.source va scanContext metadata.
+  // Tac dong: goi scanService.resolveImage va tra ket qua scan + preview anh cho frontend.
+  async resolveScanImage(req, res) {
+    try {
+      const result = await scanService.resolveImage(
+        req.file,
+        req.body?.source,
+        extractScanContext(req)
+      );
+
+      return res.status(result.httpStatus).json(result.body);
+    } catch (error) {
+      console.error("Controller Error (resolveScanImage):", error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal Server Error while resolving the uploaded QR image.",
+      });
+    }
+  },
+
+  // Ham nay dung de tra ve trang thai xu ly OpenCV/Python cua anh QR da upload.
+  // Nhan vao: req.params.pictureId va res de gui JSON metadata.
+  // Tac dong: goi scanService.getPreprocessedImageStatus va tra ket qua cho frontend poll.
+  async getPreprocessImageStatus(req, res) {
+    try {
+      const result = await scanService.getPreprocessedImageStatus(req.params?.pictureId);
+      return res.status(result.httpStatus).json(result.body);
+    } catch (error) {
+      console.error("Controller Error (getPreprocessImageStatus):", error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal Server Error while loading the processed scan image status.",
       });
     }
   },

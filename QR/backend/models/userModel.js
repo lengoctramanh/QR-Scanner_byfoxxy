@@ -24,6 +24,34 @@ const userModel = {
       throw error;
     }
   },
+
+  // Ham nay dung de tim ho so user theo accountId de lien ket scan va bo suu tap ca nhan.
+  // Nhan vao: accountId la ma tai khoan va options co the chua executor.
+  // Tra ve: ban ghi user profile hoac null neu khong ton tai.
+  async findByAccountId(accountId, options = {}) {
+    try {
+      const executor = getExecutor(options.executor);
+      const query = `
+        SELECT
+          u.user_id,
+          u.account_id,
+          a.full_name,
+          a.email,
+          a.phone
+        FROM users AS u
+        INNER JOIN accounts AS a
+          ON a.account_id = u.account_id
+        WHERE u.account_id = ?
+        LIMIT 1
+      `;
+
+      const [rows] = await executor.execute(query, [accountId]);
+      return rows[0] || null;
+    } catch (error) {
+      console.error("Model Error (findUserByAccountId):", error);
+      throw error;
+    }
+  },
 };
 
 module.exports = userModel;

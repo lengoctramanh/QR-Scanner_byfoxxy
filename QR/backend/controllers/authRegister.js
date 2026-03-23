@@ -1,5 +1,6 @@
 const accountService = require("../services/accountService");
 const brandRegistrationRequestService = require("../services/brandRegistrationRequestService");
+const { validateRegistrationPayload } = require("../validations/registerValidation");
 
 const authRegister = {
   // Ham nay dung de xu ly API dang ky cho user hoac brand.
@@ -7,72 +8,42 @@ const authRegister = {
   // Tac dong: validate payload, goi service tao user hoac gui yeu cau brand, sau do tra JSON.
   async register(req, res) {
     try {
-      const { fullName, emailOrPhone, dob, gender, password, role, brandName, taxId, website, industry, productCategories } = req.body;
+      const validation = validateRegistrationPayload(req.body || {}, req.files || []);
 
-      const normalizedRole = String(role || "")
-        .trim()
-        .toLowerCase();
-
-      if (!fullName || !emailOrPhone || !password || !normalizedRole) {
+      if (!validation.isValid) {
         return res.status(400).json({
           success: false,
-          message: "Missing required registration fields.",
+          message: validation.message,
+          errors: validation.errors,
         });
       }
 
-      if (!["user", "brand"].includes(normalizedRole)) {
-        return res.status(400).json({
-          success: false,
-          message: "Invalid role selected.",
-        });
-      }
-
-      if (!dob) {
-        return res.status(400).json({
-          success: false,
-          message: "Date of birth is required.",
-        });
-      }
-
-      if (normalizedRole === "brand" && (!brandName || !taxId)) {
-        return res.status(400).json({
-          success: false,
-          message: "Brand name and tax ID are required for business registration.",
-        });
-      }
-
-      if (normalizedRole === "user") {
-        const isExisted = await accountService.exist(emailOrPhone);
-
-        if (isExisted) {
-          return res.status(400).json({
-            success: false,
-            message: "Email or phone number already exists!",
-          });
-        }
-      }
+      const normalizedPayload = validation.normalizedData;
 
       const result =
-        normalizedRole === "brand"
+        normalizedPayload.role === "brand"
           ? await brandRegistrationRequestService.submitRequest({
-              fullName,
-              emailOrPhone,
-              dob,
-              gender,
-              password,
-              brandName,
-              taxId,
-              website,
-              industry,
-              productCategories,
+              fullName: normalizedPayload.fullName,
+              email: normalizedPayload.email,
+              phone: normalizedPayload.phone,
+              dob: normalizedPayload.dob,
+              gender: normalizedPayload.gender,
+              password: normalizedPayload.password,
+              brandName: normalizedPayload.brandName,
+              taxId: normalizedPayload.taxId,
+              website: normalizedPayload.website,
+              industry: normalizedPayload.industry,
+              productCategories: normalizedPayload.productCategories,
               attachments: req.files || [],
             })
           : await accountService.createUserAccount({
-              fullName,
-              emailOrPhone,
-              dob,
-              gender,
-              password,
+              fullName: normalizedPayload.fullName,
+              email: normalizedPayload.email,
+              phone: normalizedPayload.phone,
+              dob: normalizedPayload.dob,
+              gender: normalizedPayload.gender,
+              password: normalizedPayload.password,
+              termsAccepted: normalizedPayload.termsAccepted,
             });
 
       if (result && result.isValid) {
@@ -86,6 +57,7 @@ const authRegister = {
       return res.status(result.httpStatus || 500).json({
         success: false,
         message: result.message || "Registration failed!",
+        errors: result.errors || null,
       });
     } catch (error) {
       console.error("Controller Error (register):", error);
