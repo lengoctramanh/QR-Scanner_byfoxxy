@@ -201,45 +201,6 @@ CREATE TABLE batches (
     FOREIGN KEY (product_id) REFERENCES products(product_id) ON DELETE CASCADE
 );
 
--- ============================================================
--- PHAN 2B: NHAN / TEM QR CUA TUNG LO HANG
--- Muc dich: Moi batch gom nhieu tem nho (label tag), moi tem chi co QR Web Link va QR 1.
--- DB luu metadata duong dan anh de frontend render truc tiep tu he thong file.
--- ============================================================
-
--- Moi tem nho vat ly gan voi dung 1 qr_id va co sequence trong batch.
-CREATE TABLE batch_qr_labels (
-    label_id           VARCHAR(50)  PRIMARY KEY,
-    batch_id           VARCHAR(50)  NOT NULL,
-    qr_id              VARCHAR(50)  NOT NULL,
-    sequence_no        INT          NOT NULL CHECK (sequence_no > 0),
-    label_code         VARCHAR(120) NOT NULL UNIQUE,
-    storage_root_path  VARCHAR(500) NOT NULL,
-    width_cm           DECIMAL(4,2) NOT NULL DEFAULT 5.00,
-    height_cm          DECIMAL(4,2) NOT NULL DEFAULT 2.00,
-    qr_size_cm         DECIMAL(4,2) NOT NULL DEFAULT 1.00,
-    created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_batch_label_sequence (batch_id, sequence_no),
-    UNIQUE KEY uq_qr_single_label (qr_id),
-    FOREIGN KEY (batch_id) REFERENCES batches(batch_id) ON DELETE CASCADE,
-    FOREIGN KEY (qr_id)    REFERENCES qr_codes(qr_id) ON DELETE CASCADE
-);
-
--- Moi tem co nhieu asset anh: QR Web Link, QR 1 va label frame.
-CREATE TABLE batch_qr_label_assets (
-    asset_id           VARCHAR(50)  PRIMARY KEY,
-    label_id           VARCHAR(50)  NOT NULL,
-    asset_type         ENUM('website_qr', 'qr_1', 'label_frame') NOT NULL,
-    file_name          VARCHAR(255) NOT NULL,
-    file_format        ENUM('svg', 'png', 'jpg', 'webp') NOT NULL DEFAULT 'svg',
-    storage_path       VARCHAR(500) NOT NULL,
-    public_url         VARCHAR(500) NOT NULL,
-    width_cm           DECIMAL(4,2) NULL,
-    height_cm          DECIMAL(4,2) NULL,
-    created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_label_asset_type (label_id, asset_type),
-    FOREIGN KEY (label_id) REFERENCES batch_qr_labels(label_id) ON DELETE CASCADE
-);
 
 -- ============================================================
 -- PHẦN 3: QUY TRÌNH YÊU CẦU & PHÊ DUYỆT MÃ QR
@@ -311,43 +272,76 @@ CREATE TABLE approval_requests ( -- xx
 -- Lớp 2 (Hidden PIN):   Dưới lớp cào, nhập kết hợp → xác thực thật/giả
 -- ============================================================
 
+
+
+-- ============================================================
 CREATE TABLE qr_codes (
-    qr_id            VARCHAR(50)  PRIMARY KEY,            -- ID nội bộ quản lý mã QR, dùng UUID
-    -- ── LỚP 1: MÃ LỘ THIÊN ──────────────────────────────────
-    -- Đây là chuỗi thực tế được encode vào hình QR in trên bao bì.
-    -- Khi scan sẽ trả về URL dạng: https://app.com/scan?t={qr_public_token}
+    qr_id            VARCHAR(50)  PRIMARY KEY,            -- ID noi bo quan ly ma QR, dung UUID
+    -- LOP 1: MA LO THIEN
+    -- Day la chuoi thuc te duoc encode vao hinh QR in tren bao bi.
+    -- Khi scan se tra ve URL dang: https://app.com/scan?t={qr_public_token}
     qr_public_token  VARCHAR(255) UNIQUE NOT NULL,
-    -- ── LỚP 2: MÃ ẨN (DƯỚI LỚP CÀO) ─────────────────────────
-    -- Lưu dưới dạng HASH (SHA-256 + salt, hoặc bcrypt).
-    -- TUYỆT ĐỐI không lưu giá trị gốc (plain text PIN).
-    -- Admin bị chặn xem cột này thông qua View (Phần 11).
+    -- LOP 2: MA XAC THUC QR 1
+    -- Luu duoi dang HASH. Tuyet doi khong luu gia tri PIN/plain text goc.
     hidden_pin_hash  VARCHAR(255) NOT NULL,
-    -- Nguồn gốc của mã này: do Brand tự cung cấp hay do hệ thống sinh tự động
     source           ENUM('brand_provided', 'system_generated') NOT NULL,
-    -- Liên kết tới sản phẩm và lô hàng mà con tem này được dán lên
     product_id       VARCHAR(50)  NOT NULL,
     batch_id         VARCHAR(50)  NOT NULL,
-    request_id       VARCHAR(50)  NULL,                   -- Từ yêu cầu cấp mã nào mà ra. NULL nếu import thủ công
-    -- ── VÒNG ĐỜI MÃ QR ────────────────────────────────────────
-    -- NEW        → Mã mới tạo, chưa ai quét
-    -- ACTIVATED  → Đã được kích hoạt (hidden PIN đã xác thực lần đầu)
-    -- SUSPICIOUS → Có dấu hiệu bất thường (nhập PIN nhiều lần / quét từ nhiều thiết bị)
-    -- BLOCKED    → Admin đã khóa thủ công
-    -- EXPIRED    → Đã hết hạn bảo hành
+    request_id       VARCHAR(50)  NULL,
     status           ENUM('NEW', 'ACTIVATED', 'SUSPICIOUS', 'BLOCKED', 'EXPIRED') DEFAULT 'NEW',
-    created_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP, -- Thời điểm mã được tạo trong hệ thống
-    effective_from   DATETIME     NULL,                   -- Từ thời điểm này mã mới có hiệu lực (set trước cho hàng chưa ra kệ)
-    activated_at     DATETIME     NULL,                   -- Thời điểm hidden PIN được xác thực THÀNH CÔNG lần đầu tiên
-    expires_at       DATETIME     NULL,                   -- Thời điểm hết hạn bảo hành (Trigger tính từ activated_at)
-    -- ── THỐNG KÊ QUÉT (dùng để phát hiện bất thường) ─────────
-    scan_limit       INT          DEFAULT 5,              -- Ngưỡng số lần nhập PIN: vượt quá → chuyển SUSPICIOUS
-    total_public_scans  INT       DEFAULT 0,              -- Tổng số lần mã lộ thiên bị quét (Trigger tự tăng)
-    total_pin_attempts  INT       DEFAULT 0,              -- Tổng số lần có người nhập hidden PIN (Trigger tự tăng)
-    FOREIGN KEY(product_id)  REFERENCES products(product_id),
-    FOREIGN KEY (batch_id)    REFERENCES batches(batch_id),
-    -- Yêu cầu cấp mã bị xóa → chỉ SET NULL, không xóa mã QR đang lưu hành
-    FOREIGN KEY (request_id)  REFERENCES qr_code_requests(request_id) ON DELETE SET NULL
+    created_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    effective_from   DATETIME     NULL,
+    activated_at     DATETIME     NULL,
+    expires_at       DATETIME     NULL,
+    scan_limit       INT          DEFAULT 5,
+    total_public_scans  INT       DEFAULT 0,
+    total_pin_attempts  INT       DEFAULT 0,
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (batch_id) REFERENCES batches(batch_id),
+    FOREIGN KEY (request_id) REFERENCES qr_code_requests(request_id) ON DELETE SET NULL
 );
+
+-- ============================================================
+-- PHAN 2B: NHAN / TEM QR CUA TUNG LO HANG
+-- Muc dich: Moi batch gom nhieu tem nho (label tag), moi tem chi co QR Web Link va QR 1.
+-- DB luu metadata duong dan anh de frontend render truc tiep tu he thong file.
+-- Luu y: phai dat sau qr_codes vi batch_qr_labels co khoa ngoai den qr_codes.
+-- ============================================================
+
+-- Moi tem nho vat ly gan voi dung 1 qr_id va co sequence trong batch.
+CREATE TABLE batch_qr_labels (
+    label_id           VARCHAR(50)  PRIMARY KEY,
+    batch_id           VARCHAR(50)  NOT NULL,
+    qr_id              VARCHAR(50)  NOT NULL,
+    sequence_no        INT          NOT NULL CHECK (sequence_no > 0),
+    label_code         VARCHAR(120) NOT NULL UNIQUE,
+    storage_root_path  VARCHAR(500) NOT NULL,
+    width_cm           DECIMAL(4,2) NOT NULL DEFAULT 5.00,
+    height_cm          DECIMAL(4,2) NOT NULL DEFAULT 2.00,
+    qr_size_cm         DECIMAL(4,2) NOT NULL DEFAULT 1.00,
+    created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_batch_label_sequence (batch_id, sequence_no),
+    UNIQUE KEY uq_qr_single_label (qr_id),
+    FOREIGN KEY (batch_id) REFERENCES batches(batch_id) ON DELETE CASCADE,
+    FOREIGN KEY (qr_id)    REFERENCES qr_codes(qr_id) ON DELETE CASCADE
+);
+
+-- Moi tem co nhieu asset anh: QR Web Link, QR 1 va label frame.
+CREATE TABLE batch_qr_label_assets (
+    asset_id           VARCHAR(50)  PRIMARY KEY,
+    label_id           VARCHAR(50)  NOT NULL,
+    asset_type         ENUM('website_qr', 'qr_1', 'label_frame') NOT NULL,
+    file_name          VARCHAR(255) NOT NULL,
+    file_format        ENUM('svg', 'png', 'jpg', 'webp') NOT NULL DEFAULT 'svg',
+    storage_path       VARCHAR(500) NOT NULL,
+    public_url         VARCHAR(500) NOT NULL,
+    width_cm           DECIMAL(4,2) NULL,
+    height_cm          DECIMAL(4,2) NULL,
+    created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_label_asset_type (label_id, asset_type),
+    FOREIGN KEY (label_id) REFERENCES batch_qr_labels(label_id) ON DELETE CASCADE
+);
+
 
 -- ============================================================
 -- PHẦN 6: DẤU VÂN TAY THIẾT BỊ (DEVICE FINGERPRINTING)
@@ -700,4 +694,6 @@ ALTER TABLE accounts
 -- ============================================================
 -- END OF SCRIPT
 -- ============================================================
+
+
 
