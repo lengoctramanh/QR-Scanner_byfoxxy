@@ -5,7 +5,8 @@ import { validateRegisterData } from "../utils/validators";
 
 export const INITIAL_REGISTER_FORM = {
   fullName: "",
-  emailOrPhone: "",
+  email: "",
+  phone: "",
   password: "",
   confirmPassword: "",
   dob: "",
@@ -16,7 +17,7 @@ export const INITIAL_REGISTER_FORM = {
   productCategories: "",
   website: "",
   attachments: [],
-  agreePolicy: false,
+  termsAccepted: false,
 };
 
 // Ham nay dung de quan ly toan bo state va hanh vi cua form dang ky.
@@ -28,6 +29,10 @@ export default function useRegisterForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [formData, setFormData] = useState(INITIAL_REGISTER_FORM);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [formMessage, setFormMessage] = useState("");
+  const [formTone, setFormTone] = useState("info");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
   // Ham nay dung de cap nhat formData theo tung input nguoi dung thao tac.
@@ -39,6 +44,15 @@ export default function useRegisterForm() {
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
+    setValidationErrors((prev) => {
+      if (!prev[name]) {
+        return prev;
+      }
+      const nextErrors = { ...prev };
+      delete nextErrors[name];
+      return nextErrors;
+    });
+    setFormMessage("");
   };
 
   // Ham nay dung de doi role dang ky va reset lai danh sach tep dinh kem.
@@ -49,7 +63,14 @@ export default function useRegisterForm() {
     setFormData((prev) => ({
       ...prev,
       attachments: [],
+      brandName: nextRole === "brand" ? prev.brandName : "",
+      taxId: nextRole === "brand" ? prev.taxId : "",
+      industry: nextRole === "brand" ? prev.industry : "",
+      productCategories: nextRole === "brand" ? prev.productCategories : "",
+      website: nextRole === "brand" ? prev.website : "",
     }));
+    setValidationErrors({});
+    setFormMessage("");
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -61,7 +82,22 @@ export default function useRegisterForm() {
   // Tac dong: dua danh sach file vao utility processFiles va tat trang thai keo tha.
   const handleFileChange = (event) => {
     setIsDragging(false);
-    processFiles(Array.from(event.target.files || []), setFormData, fileInputRef);
+    const uploadResult = processFiles(Array.from(event.target.files || []), formData.attachments);
+    setFormData((prev) => ({
+      ...prev,
+      attachments: uploadResult.attachments,
+    }));
+    setValidationErrors((prev) => {
+      const nextErrors = { ...prev };
+      delete nextErrors.attachments;
+      return nextErrors;
+    });
+    setFormTone(uploadResult.errorMessage ? "error" : "info");
+    setFormMessage(uploadResult.errorMessage);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   // Ham nay dung de bat trang thai keo file vao khu vuc upload.
@@ -86,14 +122,34 @@ export default function useRegisterForm() {
   const handleDrop = (event) => {
     event.preventDefault();
     setIsDragging(false);
-    processFiles(Array.from(event.dataTransfer.files || []), setFormData, fileInputRef);
+    const uploadResult = processFiles(Array.from(event.dataTransfer.files || []), formData.attachments);
+    setFormData((prev) => ({
+      ...prev,
+      attachments: uploadResult.attachments,
+    }));
+    setValidationErrors((prev) => {
+      const nextErrors = { ...prev };
+      delete nextErrors.attachments;
+      return nextErrors;
+    });
+    setFormTone(uploadResult.errorMessage ? "error" : "info");
+    setFormMessage(uploadResult.errorMessage);
   };
 
   // Ham nay dung de xoa mot tep khoi danh sach dinh kem.
   // Nhan vao: indexToRemove la vi tri tep can xoa.
   // Tac dong: cap nhat lai truong attachments trong formData.
   const handleRemoveFile = (indexToRemove) => {
-    removeFile(indexToRemove, setFormData);
+    setFormData((prev) => ({
+      ...prev,
+      attachments: removeFile(indexToRemove, prev.attachments),
+    }));
+    setValidationErrors((prev) => {
+      const nextErrors = { ...prev };
+      delete nextErrors.attachments;
+      return nextErrors;
+    });
+    setFormMessage("");
   };
 
   // Ham nay dung de kiem tra va gui form dang ky len backend.
@@ -103,13 +159,38 @@ export default function useRegisterForm() {
     event.preventDefault();
 
     const validation = validateRegisterData(formData, role);
+    setValidationErrors(validation.errors);
+
     if (!validation.isValid) {
-      alert(validation.message);
+      setFormTone("error");
+      setFormMessage(validation.message);
       return;
     }
 
+    setIsSubmitting(true);
     const result = await submitRegistration(formData, role);
-    alert(result.message);
+    setIsSubmitting(false);
+
+    if (!result.success) {
+      setFormTone("error");
+      setFormMessage(result.message);
+      if (result.errors) {
+        setValidationErrors(result.errors);
+      }
+      return;
+    }
+
+    setValidationErrors({});
+    setFormTone("success");
+    setFormMessage(result.message || "Registration completed successfully.");
+    setFormData({
+      ...INITIAL_REGISTER_FORM,
+      attachments: [],
+    });
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   return {
@@ -118,6 +199,10 @@ export default function useRegisterForm() {
     showConfirmPassword,
     isDragging,
     formData,
+    validationErrors,
+    formMessage,
+    formTone,
+    isSubmitting,
     fileInputRef,
     handleChange,
     handleRoleChange,

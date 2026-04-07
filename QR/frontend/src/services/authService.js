@@ -8,11 +8,14 @@ export const submitRegistration = async (formData, role) => {
     const payload = new FormData();
 
     payload.append("role", role);
-    payload.append("emailOrPhone", formData.emailOrPhone);
+    payload.append("email", formData.email);
+    payload.append("phone", formData.phone);
     payload.append("password", formData.password);
+    payload.append("confirmPassword", formData.confirmPassword);
     payload.append("fullName", formData.fullName);
     payload.append("dob", formData.dob);
     payload.append("gender", formData.gender);
+    payload.append("termsAccepted", String(formData.termsAccepted));
 
     if (role === "brand") {
       payload.append("brandName", formData.brandName);
@@ -33,11 +36,13 @@ export const submitRegistration = async (formData, role) => {
     return {
       success: true,
       message: response.message,
+      data: response.data || null,
     };
   } catch (error) {
     return {
       success: false,
       message: error.response?.data?.message || "Unable to connect to the server.",
+      errors: error.response?.data?.errors || null,
     };
   }
 };
@@ -70,11 +75,55 @@ export const requestPasswordResetOtp = async (identifier) => {
     return {
       success: response.success !== false,
       message: response.message || "If an account exists for that email or phone, an OTP has been sent.",
+      data: response.data || {},
     };
   } catch (error) {
     return {
       success: false,
       message: error.response?.data?.message || "Server connection error. Please try again.",
+    };
+  }
+};
+
+// Ham nay dung de gui OTP len backend de xac minh va lay reset token tam thoi.
+// Nhan vao: object chua identifier va otp 6 chu so.
+// Tra ve: object success/data/message de hook quen mat khau xu ly.
+export const verifyPasswordResetOtp = async ({ identifier, otp }) => {
+  try {
+    const response = await authApi.verifyOtp({ identifier, otp });
+
+    return {
+      success: response.success !== false,
+      message: response.message || "OTP verified successfully.",
+      data: response.data || {},
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Unable to verify the code right now.",
+    };
+  }
+};
+
+// Ham nay dung de gui mat khau moi cung reset token len backend.
+// Nhan vao: object chua resetToken, newPassword va confirmPassword.
+// Tra ve: object success/message de hook quen mat khau dieu huong sau khi doi xong.
+export const resetPasswordWithToken = async ({ resetToken, newPassword, confirmPassword }) => {
+  try {
+    const response = await authApi.resetPassword({
+      resetToken,
+      newPassword,
+      confirmPassword,
+    });
+
+    return {
+      success: response.success !== false,
+      message: response.message || "Password reset successfully. Please sign in again.",
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Unable to reset the password right now.",
     };
   }
 };

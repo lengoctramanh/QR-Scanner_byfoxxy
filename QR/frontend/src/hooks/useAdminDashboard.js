@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { approveBrandRegistrationRequest, fetchAdminSystemSummary, fetchBrandRegistrationRequestDetail, fetchBrandRegistrationRequests, fetchWebsiteQrConfig, rejectBrandRegistrationRequest, revokeAdminSession, updateWebsiteQrConfig } from "../services/adminService";
 import { fetchCurrentUserProfile } from "../services/authService";
-import { approveBrandRegistrationRequest, fetchBrandRegistrationRequestDetail, fetchBrandRegistrationRequests, rejectBrandRegistrationRequest } from "../services/adminService";
 import useAuthCheck from "./useAuthCheck";
-import { INITIAL_ACTIVE_SESSIONS, INITIAL_APPROVAL_REQUESTS, INITIAL_QR_CODE_REQUESTS, INITIAL_QR_OVERVIEW } from "../data/adminDashboardData";
 
 const ACTIVE_BRAND_REQUEST_STATUSES = ["PENDING", "UNDER_REVIEW"];
 const BRAND_STATUS_PRIORITY = {
@@ -18,6 +17,24 @@ const INITIAL_ADMIN_PROFILE = {
   status: "active",
   avatarUrl: "",
   lastLoginAt: null,
+};
+
+const INITIAL_WEBSITE_QR_STATE = {
+  current: null,
+  history: [],
+};
+
+const INITIAL_SYSTEM_STATE = {
+  totals: {
+    users: 0,
+    brands: 0,
+    admins: 0,
+    activeSessions: 0,
+  },
+  users: [],
+  brands: [],
+  admins: [],
+  activeSessions: [],
 };
 
 // Ham nay dung de sap xep hang doi brand theo muc uu tien va thoi diem cap nhat gan nhat.
@@ -41,20 +58,22 @@ export default function useAdminDashboard() {
   useAuthCheck("admin");
 
   const [activeTab, setActiveTab] = useState("brands");
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [qrFilter, setQrFilter] = useState("ALL");
-  const [approvalRequests, setApprovalRequests] = useState(INITIAL_APPROVAL_REQUESTS);
-  const [qrCodeRequests, setQrCodeRequests] = useState(INITIAL_QR_CODE_REQUESTS);
-  const [qrOverviewRows] = useState(INITIAL_QR_OVERVIEW);
-  const [activeSessions, setActiveSessions] = useState(INITIAL_ACTIVE_SESSIONS);
   const [adminProfile, setAdminProfile] = useState(INITIAL_ADMIN_PROFILE);
   const [brandRequests, setBrandRequests] = useState([]);
   const [selectedBrandRequestId, setSelectedBrandRequestId] = useState("");
   const [selectedBrandRequestDetail, setSelectedBrandRequestDetail] = useState(null);
-  const [activityBanner, setActivityBanner] = useState("Review live brand onboarding requests and manage approval decisions from one place.");
+  const [websiteQrState, setWebsiteQrState] = useState(INITIAL_WEBSITE_QR_STATE);
+  const [websiteUrlDraft, setWebsiteUrlDraft] = useState("");
+  const [systemSummary, setSystemSummary] = useState(INITIAL_SYSTEM_STATE);
+  const [selectedSystemPanel, setSelectedSystemPanel] = useState("");
+  const [activityBanner, setActivityBanner] = useState("Manage live brand onboarding, the public website QR URL, and real system sessions from one place.");
   const [isBrandQueueLoading, setIsBrandQueueLoading] = useState(true);
   const [isBrandDetailLoading, setIsBrandDetailLoading] = useState(false);
   const [activeBrandActionId, setActiveBrandActionId] = useState("");
+  const [isWebsiteQrLoading, setIsWebsiteQrLoading] = useState(true);
+  const [isWebsiteQrSaving, setIsWebsiteQrSaving] = useState(false);
+  const [isSystemLoading, setIsSystemLoading] = useState(true);
+  const [activeSessionActionId, setActiveSessionActionId] = useState("");
 
   // Ham nay dung de nap profile admin hien tai tu endpoint /auth/me.
   // Nhan vao: khong nhan tham so, token duoc axiosClient gui tu dong.
@@ -99,24 +118,77 @@ export default function useAdminDashboard() {
     setIsBrandQueueLoading(false);
   };
 
+  // Ham nay dung de nap cau hinh website QR hien tai va lich su thay doi tu backend.
+  // Nhan vao: khong nhan tham so.
+  // Tac dong: cap nhat websiteQrState va draft URL dang hien tren form admin.
+  const loadWebsiteQrState = async () => {
+    setIsWebsiteQrLoading(true);
+
+    const result = await fetchWebsiteQrConfig();
+
+    if (!result.success) {
+      setWebsiteQrState(INITIAL_WEBSITE_QR_STATE);
+      setWebsiteUrlDraft("");
+      setActivityBanner(result.message || "Unable to load the website QR configuration.");
+      setIsWebsiteQrLoading(false);
+      return;
+    }
+
+    const nextState = {
+      current: result.data?.current || null,
+      history: Array.isArray(result.data?.history) ? result.data.history : [],
+    };
+
+    setWebsiteQrState(nextState);
+    setWebsiteUrlDraft(nextState.current?.websiteUrl || "");
+    setIsWebsiteQrLoading(false);
+  };
+
+  // Ham nay dung de nap snapshot he thong that tu DB cho admin dashboard.
+  // Nhan vao: khong nhan tham so.
+  // Tac dong: cap nhat totals, danh sach user/brand/admin va active sessions.
+  const loadSystemSummary = async () => {
+    setIsSystemLoading(true);
+
+    const result = await fetchAdminSystemSummary();
+
+    if (!result.success) {
+      setSystemSummary(INITIAL_SYSTEM_STATE);
+      setActivityBanner(result.message || "Unable to load the live system summary.");
+      setIsSystemLoading(false);
+      return;
+    }
+
+    setSystemSummary({
+      totals: result.data?.totals || INITIAL_SYSTEM_STATE.totals,
+      users: Array.isArray(result.data?.users) ? result.data.users : [],
+      brands: Array.isArray(result.data?.brands) ? result.data.brands : [],
+      admins: Array.isArray(result.data?.admins) ? result.data.admins : [],
+      activeSessions: Array.isArray(result.data?.activeSessions) ? result.data.activeSessions : [],
+    });
+    setIsSystemLoading(false);
+  };
+
   useEffect(() => {
-    loadAdminProfile();
-    loadBrandRequests();
+    const bootstrapTimer = window.setTimeout(() => {
+      void loadAdminProfile();
+      void loadBrandRequests();
+      void loadWebsiteQrState();
+      void loadSystemSummary();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(bootstrapTimer);
+    };
   }, []);
 
-  const sortedBrandRequests = useMemo(
-    () =>
-      brandRequests
-        .filter((requestRow) => ACTIVE_BRAND_REQUEST_STATUSES.includes(requestRow.requestStatus))
-        .sort(compareBrandRequests),
-    [brandRequests],
-  );
+  const sortedBrandRequests = useMemo(() => brandRequests.filter((requestRow) => ACTIVE_BRAND_REQUEST_STATUSES.includes(requestRow.requestStatus)).sort(compareBrandRequests), [brandRequests]);
 
-  const filteredQrRows = qrFilter === "ALL" ? qrOverviewRows : qrOverviewRows.filter((item) => item.status === qrFilter);
-  const suspiciousQrCount = qrOverviewRows.filter((item) => item.status === "SUSPICIOUS").length;
-  const pendingApprovalCount = approvalRequests.filter((item) => item.status === "PENDING").length + qrCodeRequests.filter((item) => item.status === "PENDING" || item.status === "PROCESSING").length;
-  const activeAdminSessions = activeSessions.filter((item) => item.role === "admin").length;
-  const totalPublicScans = qrOverviewRows.reduce((total, item) => total + item.total_public_scans, 0);
+  const activeSessions = systemSummary.activeSessions;
+  const totalUsers = systemSummary.totals.users || systemSummary.users.length;
+  const totalBrands = systemSummary.totals.brands || systemSummary.brands.length;
+  const totalAdmins = systemSummary.totals.admins || systemSummary.admins.length;
+  const totalActiveSessions = systemSummary.totals.activeSessions || systemSummary.activeSessions.length;
 
   // Ham nay dung de mo modal review va nap chi tiet ho so brand da chon.
   // Nhan vao: requestId la ma request can xem chi tiet.
@@ -147,6 +219,20 @@ export default function useAdminDashboard() {
     setIsBrandDetailLoading(false);
   };
 
+  // Ham nay dung de mo modal thong ke cho users, brands hoac admins.
+  // Nhan vao: panelKey la users, brands hoac admins.
+  // Tac dong: cap nhat loai danh sach dang duoc xem chi tiet.
+  const openSystemPanel = (panelKey) => {
+    setSelectedSystemPanel(panelKey);
+  };
+
+  // Ham nay dung de dong modal chi tiet thong ke he thong.
+  // Nhan vao: khong nhan tham so.
+  // Tac dong: reset selectedSystemPanel.
+  const closeSystemPanel = () => {
+    setSelectedSystemPanel("");
+  };
+
   // Ham nay dung de xu ly approve request brand va tao tai khoan brand that.
   // Nhan vao: requestId la ma request can approve.
   // Tac dong: goi API tao tai khoan, refresh queue va dong modal neu can.
@@ -168,7 +254,7 @@ export default function useAdminDashboard() {
       closeBrandReview();
     }
 
-    await loadBrandRequests();
+    await Promise.all([loadBrandRequests(), loadSystemSummary()]);
   };
 
   // Ham nay dung de tu choi request brand va dong bo lai hang doi review.
@@ -195,82 +281,100 @@ export default function useAdminDashboard() {
     await loadBrandRequests();
   };
 
-  // Ham nay dung de cap nhat ket qua xu ly cho approval request mock trong tab approval.
-  // Nhan vao: approvalId la ma request va nextStatus la trang thai moi.
-  // Tac dong: sua state approvalRequests va thong bao banner hoat dong.
-  const handleApprovalDecision = (approvalId, nextStatus) => {
-    setApprovalRequests((currentRows) =>
-      currentRows.map((row) =>
-        row.approval_id === approvalId
-          ? {
-              ...row,
-              status: nextStatus,
-              confirmed_at: new Date().toISOString(),
-              rejection_reason: nextStatus === "REJECTED" ? "Mock reason: the proposed change does not have enough supporting evidence yet." : null,
-            }
-          : row,
-      ),
-    );
-    setActivityBanner(`Approval request ${approvalId} moved to ${nextStatus}.`);
+  // Ham nay dung de cap nhat gia tri URL dang nhap trong form website QR cua admin.
+  // Nhan vao: nextValue la chuoi URL moi vua thay doi tren input.
+  // Tac dong: dong bo state websiteUrlDraft cho form.
+  const handleWebsiteUrlDraftChange = (nextValue) => {
+    setWebsiteUrlDraft(nextValue);
   };
 
-  // Ham nay dung de xu ly cac yeu cau phat hanh QR mock trong tab request.
-  // Nhan vao: requestId la ma yeu cau QR va nextStatus la ket qua admin chon.
-  // Tac dong: cap nhat state qrCodeRequests va thong diep banner.
-  const handleQrRequestDecision = (requestId, nextStatus) => {
-    setQrCodeRequests((currentRows) =>
-      currentRows.map((row) =>
-        row.request_id === requestId
-          ? {
-              ...row,
-              status: nextStatus,
-              processed_at: new Date().toISOString(),
-              admin_note: nextStatus === "REJECTED" ? "Mock note: the import file does not match the template format yet." : "Mock note: the admin team accepted and is processing this request.",
-            }
-          : row,
-      ),
-    );
-    setActivityBanner(`QR request ${requestId} moved to ${nextStatus}.`);
+  // Ham nay dung de luu URL website moi, sinh QR va refresh lich su phien ban.
+  // Nhan vao: khong nhan tham so, doc websiteUrlDraft tu state hien tai.
+  // Tac dong: goi API luu website QR, cap nhat banner va state preview moi nhat.
+  const handleSaveWebsiteQr = async () => {
+    if (!String(websiteUrlDraft || "").trim()) {
+      setActivityBanner("Enter the main website URL before generating the QR.");
+      return;
+    }
+
+    setIsWebsiteQrSaving(true);
+
+    const result = await updateWebsiteQrConfig({
+      websiteUrl: websiteUrlDraft,
+    });
+
+    if (!result.success) {
+      setActivityBanner(result.message || "Unable to save the website QR configuration.");
+      setIsWebsiteQrSaving(false);
+      return;
+    }
+
+    const nextState = {
+      current: result.data?.current || null,
+      history: Array.isArray(result.data?.history) ? result.data.history : [],
+    };
+
+    setWebsiteQrState(nextState);
+    setWebsiteUrlDraft(nextState.current?.websiteUrl || websiteUrlDraft);
+    setActivityBanner(result.message || "The website QR configuration was updated.");
+    setIsWebsiteQrSaving(false);
   };
 
   // Ham nay dung de thu hoi mot session dang hoat dong trong bang system sessions.
   // Nhan vao: sessionId la ma session can revoke.
-  // Tac dong: xoa session khoi state va cap nhat banner.
-  const handleRevokeSession = (sessionId) => {
-    setActiveSessions((currentRows) => currentRows.filter((row) => row.session_id !== sessionId));
-    setActivityBanner(`Session ${sessionId} was revoked.`);
+  // Tac dong: goi API backend, refresh lai snapshot va cap nhat banner.
+  const handleRevokeSession = async (sessionId) => {
+    setActiveSessionActionId(sessionId);
+
+    const result = await revokeAdminSession(sessionId);
+
+    if (!result.success) {
+      setActivityBanner(result.message || "Unable to revoke the selected session.");
+      setActiveSessionActionId("");
+      return;
+    }
+
+    setActivityBanner(result.message || `Session ${sessionId} was revoked.`);
+    setActiveSessionActionId("");
+    await loadSystemSummary();
   };
 
   return {
-    activeAdminSessions,
     activeBrandActionId,
+    activeSessionActionId,
     activeSessions,
     activeTab,
     activityBanner,
     adminProfile,
-    approvalRequests,
     closeBrandReview,
-    filteredQrRows,
-    handleApprovalDecision,
+    closeSystemPanel,
     handleApproveBrandRequest,
-    handleQrRequestDecision,
     handleRejectBrandRequest,
     handleRevokeSession,
+    handleSaveWebsiteQr,
+    handleWebsiteUrlDraftChange,
     isBrandDetailLoading,
     isBrandQueueLoading,
+    isSystemLoading,
+    isWebsiteQrLoading,
+    isWebsiteQrSaving,
     openBrandReview,
-    pendingApprovalCount,
-    qrCodeRequests,
-    qrFilter,
-    qrOverviewRows,
+    openSystemPanel,
     selectedBrandRequestDetail,
     selectedBrandRequestId,
-    selectedRequest,
+    selectedSystemPanel,
     setActiveTab,
-    setQrFilter,
-    setSelectedRequest,
     sortedBrandRequests,
-    suspiciousQrCount,
-    totalPublicScans,
+    totalActiveSessions,
+    totalAdmins,
+    totalBrands,
+    totalUsers,
+    websiteQrCurrent: websiteQrState.current,
+    websiteQrHistory: websiteQrState.history,
+    websiteQrUrlDraft: websiteUrlDraft,
+    websiteQrVersionCount: websiteQrState.current?.changeNumber || 0,
+    systemAdmins: systemSummary.admins,
+    systemBrands: systemSummary.brands,
+    systemUsers: systemSummary.users,
   };
 }

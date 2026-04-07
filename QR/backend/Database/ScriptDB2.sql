@@ -16,10 +16,10 @@ CREATE TABLE accounts (
     account_id      VARCHAR(50)  PRIMARY KEY,
     full_name       VARCHAR(100) NOT NULL,                -- Họ và tên đầy đủ, bắt buộc nhập
     dob             DATE NOT NULL,                                 -- Ngày sinh (YYYY-MM-DD) bắt buộc
-    gender          ENUM('male', 'female', 'other', 'secret'), -- Giới tính, chỉ chấp nhận 4 giá trị cố định
+    gender          ENUM('male', 'female', 'other', 'secret') NOT NULL DEFAULT 'secret', -- Giới tính, chỉ chấp nhận 4 giá trị cố định
     email           VARCHAR(100) UNIQUE NOT NULL,         -- Email đăng nhập, duy nhất toàn hệ thống, bắt buộc
     phone           VARCHAR(20)  UNIQUE,                  -- Số điện thoại, không bắt buộc nhưng nếu nhập thì phải duy nhất
-    password_hash   VARCHAR(255) NOT NULL,                -- Mật khẩu đã được băm (bcrypt/argon2). TUYỆT ĐỐI không lưu plain text
+    password_hash   VARCHAR(255) NOT NULL,                -- Mật khẩu đã được băm từ password + email. TUYỆT ĐỐI không lưu plain text
     role            ENUM('admin', 'brand', 'user') NOT NULL,         -- Vai trò trong hệ thống, bắt buộc phải chọn
     status          ENUM('active', 'banned', 'pending') DEFAULT 'pending', -- Trạng thái. Mặc định 'pending' (chờ kích hoạt)
     avatar_url      VARCHAR(255),                         -- Đường dẫn ảnh đại diện (link S3, CDN...)
@@ -44,12 +44,13 @@ CREATE TABLE users (
 CREATE TABLE brands (
     brand_id              VARCHAR(50)  PRIMARY KEY,       -- ID nội bộ của brand, dùng UUID
     account_id            VARCHAR(50)  NOT NULL UNIQUE,   -- Tham chiếu tài khoản gốc. UNIQUE: 1 account = 1 brand
-    brand_name            VARCHAR(100) NOT NULL,          -- Tên thương hiệu hiển thị ra ngoài (ví dụ: "Vinamilk")
+    brand_name            VARCHAR(300) NOT NULL,          -- Tên thương hiệu hiển thị ra ngoài (ví dụ: "Vinamilk")
     logo_url              VARCHAR(255),                   -- Link ảnh logo thương hiệu
     tax_id                VARCHAR(50)  NOT NULL UNIQUE,   -- Mã số thuế doanh nghiệp, duy nhất trên toàn quốc
     website               VARCHAR(255),                   -- Địa chỉ website chính thức
-    industry              VARCHAR(100),                   -- Ngành nghề kinh doanh (ví dụ: "Thực phẩm & Đồ uống")
-    product_categories    TEXT,                           -- Danh mục sản phẩm kinh doanh, lưu dạng text dài
+    address               VARCHAR(255),                   -- Địa chỉ doanh nghiệp hoặc văn phòng liên hệ
+    industry              VARCHAR(100) NOT NULL,          -- Ngành nghề kinh doanh (ví dụ: "Thực phẩm & Đồ uống")
+    product_categories    VARCHAR(100) NOT NULL,          -- Danh mục sản phẩm kinh doanh, tối đa 100 ký tự theo form đăng ký
     verified              BOOLEAN      DEFAULT FALSE,
     verification_status   ENUM('PENDING_REVIEW', 'UNDER_REVIEW', 'APPROVED', 'REJECTED', 'RESUBMITTED')
                           NOT NULL DEFAULT 'PENDING_REVIEW',  -- Mặc định PENDING_REVIEW khi mới tạo
@@ -120,11 +121,11 @@ CREATE TABLE IF NOT EXISTS brand_registration_requests (
     email                VARCHAR(100) NOT NULL,
     phone                VARCHAR(20)  NULL,
     password_hash        VARCHAR(255) NOT NULL,
-    brand_name           VARCHAR(100) NOT NULL,
+    brand_name           VARCHAR(300) NOT NULL,
     tax_id               VARCHAR(50)  NOT NULL,
     website              VARCHAR(255) NULL,
-    industry             VARCHAR(100) NULL,
-    product_categories   TEXT         NULL,
+    industry             VARCHAR(100) NOT NULL,
+    product_categories   VARCHAR(100) NOT NULL,
     attachment_urls      JSON         NULL,
     request_status       ENUM('PENDING', 'UNDER_REVIEW', 'REJECTED', 'ACCOUNT_CREATED')
                          NOT NULL DEFAULT 'PENDING',
@@ -175,6 +176,9 @@ CREATE TABLE products (
     image_url        VARCHAR(255),                        -- Link ảnh sản phẩm chính
     -- URL này được nhúng vào QR lộ thiên để khi quét (chưa cào) sẽ dẫn đến trang này
     general_info_url VARCHAR(255),
+    manufacturer_name VARCHAR(255),                       -- Nhà sản xuất in trên bao bì hoặc hồ sơ công bố
+    origin_country   VARCHAR(255),                        -- Nguồn gốc xuất xứ hoặc quốc gia sản xuất
+    quality_certifications TEXT,                          -- Danh sách chứng nhận chất lượng như ISO, GMP, HACCP...
     created_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,               -- Tự động ghi thời điểm tạo
     updated_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Tự cập nhật khi có thay đổi
     -- Xóa thương hiệu → xóa toàn bộ sản phẩm của thương hiệu đó
@@ -268,43 +272,76 @@ CREATE TABLE approval_requests ( -- xx
 -- Lớp 2 (Hidden PIN):   Dưới lớp cào, nhập kết hợp → xác thực thật/giả
 -- ============================================================
 
+
+
+-- ============================================================
 CREATE TABLE qr_codes (
-    qr_id            VARCHAR(50)  PRIMARY KEY,            -- ID nội bộ quản lý mã QR, dùng UUID
-    -- ── LỚP 1: MÃ LỘ THIÊN ──────────────────────────────────
-    -- Đây là chuỗi thực tế được encode vào hình QR in trên bao bì.
-    -- Khi scan sẽ trả về URL dạng: https://app.com/scan?t={qr_public_token}
+    qr_id            VARCHAR(50)  PRIMARY KEY,            -- ID noi bo quan ly ma QR, dung UUID
+    -- LOP 1: MA LO THIEN
+    -- Day la chuoi thuc te duoc encode vao hinh QR in tren bao bi.
+    -- Khi scan se tra ve URL dang: https://app.com/scan?t={qr_public_token}
     qr_public_token  VARCHAR(255) UNIQUE NOT NULL,
-    -- ── LỚP 2: MÃ ẨN (DƯỚI LỚP CÀO) ─────────────────────────
-    -- Lưu dưới dạng HASH (SHA-256 + salt, hoặc bcrypt).
-    -- TUYỆT ĐỐI không lưu giá trị gốc (plain text PIN).
-    -- Admin bị chặn xem cột này thông qua View (Phần 11).
+    -- LOP 2: MA XAC THUC QR 1
+    -- Luu duoi dang HASH. Tuyet doi khong luu gia tri PIN/plain text goc.
     hidden_pin_hash  VARCHAR(255) NOT NULL,
-    -- Nguồn gốc của mã này: do Brand tự cung cấp hay do hệ thống sinh tự động
     source           ENUM('brand_provided', 'system_generated') NOT NULL,
-    -- Liên kết tới sản phẩm và lô hàng mà con tem này được dán lên
     product_id       VARCHAR(50)  NOT NULL,
     batch_id         VARCHAR(50)  NOT NULL,
-    request_id       VARCHAR(50)  NULL,                   -- Từ yêu cầu cấp mã nào mà ra. NULL nếu import thủ công
-    -- ── VÒNG ĐỜI MÃ QR ────────────────────────────────────────
-    -- NEW        → Mã mới tạo, chưa ai quét
-    -- ACTIVATED  → Đã được kích hoạt (hidden PIN đã xác thực lần đầu)
-    -- SUSPICIOUS → Có dấu hiệu bất thường (nhập PIN nhiều lần / quét từ nhiều thiết bị)
-    -- BLOCKED    → Admin đã khóa thủ công
-    -- EXPIRED    → Đã hết hạn bảo hành
+    request_id       VARCHAR(50)  NULL,
     status           ENUM('NEW', 'ACTIVATED', 'SUSPICIOUS', 'BLOCKED', 'EXPIRED') DEFAULT 'NEW',
-    created_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP, -- Thời điểm mã được tạo trong hệ thống
-    effective_from   DATETIME     NULL,                   -- Từ thời điểm này mã mới có hiệu lực (set trước cho hàng chưa ra kệ)
-    activated_at     DATETIME     NULL,                   -- Thời điểm hidden PIN được xác thực THÀNH CÔNG lần đầu tiên
-    expires_at       DATETIME     NULL,                   -- Thời điểm hết hạn bảo hành (Trigger tính từ activated_at)
-    -- ── THỐNG KÊ QUÉT (dùng để phát hiện bất thường) ─────────
-    scan_limit       INT          DEFAULT 5,              -- Ngưỡng số lần nhập PIN: vượt quá → chuyển SUSPICIOUS
-    total_public_scans  INT       DEFAULT 0,              -- Tổng số lần mã lộ thiên bị quét (Trigger tự tăng)
-    total_pin_attempts  INT       DEFAULT 0,              -- Tổng số lần có người nhập hidden PIN (Trigger tự tăng)
-    FOREIGN KEY(product_id)  REFERENCES products(product_id),
-    FOREIGN KEY (batch_id)    REFERENCES batches(batch_id),
-    -- Yêu cầu cấp mã bị xóa → chỉ SET NULL, không xóa mã QR đang lưu hành
-    FOREIGN KEY (request_id)  REFERENCES qr_code_requests(request_id) ON DELETE SET NULL
+    created_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    effective_from   DATETIME     NULL,
+    activated_at     DATETIME     NULL,
+    expires_at       DATETIME     NULL,
+    scan_limit       INT          DEFAULT 5,
+    total_public_scans  INT       DEFAULT 0,
+    total_pin_attempts  INT       DEFAULT 0,
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    FOREIGN KEY (batch_id) REFERENCES batches(batch_id),
+    FOREIGN KEY (request_id) REFERENCES qr_code_requests(request_id) ON DELETE SET NULL
 );
+
+-- ============================================================
+-- PHAN 2B: NHAN / TEM QR CUA TUNG LO HANG
+-- Muc dich: Moi batch gom nhieu tem nho (label tag), moi tem chi co QR Web Link va QR 1.
+-- DB luu metadata duong dan anh de frontend render truc tiep tu he thong file.
+-- Luu y: phai dat sau qr_codes vi batch_qr_labels co khoa ngoai den qr_codes.
+-- ============================================================
+
+-- Moi tem nho vat ly gan voi dung 1 qr_id va co sequence trong batch.
+CREATE TABLE batch_qr_labels (
+    label_id           VARCHAR(50)  PRIMARY KEY,
+    batch_id           VARCHAR(50)  NOT NULL,
+    qr_id              VARCHAR(50)  NOT NULL,
+    sequence_no        INT          NOT NULL CHECK (sequence_no > 0),
+    label_code         VARCHAR(120) NOT NULL UNIQUE,
+    storage_root_path  VARCHAR(500) NOT NULL,
+    width_cm           DECIMAL(4,2) NOT NULL DEFAULT 5.00,
+    height_cm          DECIMAL(4,2) NOT NULL DEFAULT 2.00,
+    qr_size_cm         DECIMAL(4,2) NOT NULL DEFAULT 1.00,
+    created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_batch_label_sequence (batch_id, sequence_no),
+    UNIQUE KEY uq_qr_single_label (qr_id),
+    FOREIGN KEY (batch_id) REFERENCES batches(batch_id) ON DELETE CASCADE,
+    FOREIGN KEY (qr_id)    REFERENCES qr_codes(qr_id) ON DELETE CASCADE
+);
+
+-- Moi tem co nhieu asset anh: QR Web Link, QR 1 va label frame.
+CREATE TABLE batch_qr_label_assets (
+    asset_id           VARCHAR(50)  PRIMARY KEY,
+    label_id           VARCHAR(50)  NOT NULL,
+    asset_type         ENUM('website_qr', 'qr_1', 'label_frame') NOT NULL,
+    file_name          VARCHAR(255) NOT NULL,
+    file_format        ENUM('svg', 'png', 'jpg', 'webp') NOT NULL DEFAULT 'svg',
+    storage_path       VARCHAR(500) NOT NULL,
+    public_url         VARCHAR(500) NOT NULL,
+    width_cm           DECIMAL(4,2) NULL,
+    height_cm          DECIMAL(4,2) NULL,
+    created_at         TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_label_asset_type (label_id, asset_type),
+    FOREIGN KEY (label_id) REFERENCES batch_qr_labels(label_id) ON DELETE CASCADE
+);
+
 
 -- ============================================================
 -- PHẦN 6: DẤU VÂN TAY THIẾT BỊ (DEVICE FINGERPRINTING)
@@ -362,12 +399,14 @@ CREATE TABLE scan_global_logs (
     hidden_pin_input_hash  VARCHAR(255) NULL,
     -- ── LIÊN KẾT (dùng SET NULL để giữ log kể cả khi entity bị xóa) ──
     qr_id                  VARCHAR(50)  NULL,             -- Mã QR tương ứng trong DB. NULL nếu token không tồn tại (quét mã giả)
+    batch_id               VARCHAR(50)  NULL,             -- Batch match duoc tu info QR hoac guest token de dashboard truy vet nhanh
     account_id             VARCHAR(50)  NULL,             -- Tài khoản thực hiện quét. NULL nếu là khách vãng lai
     fingerprint_id         VARCHAR(50)  NULL,             -- Fingerprint thiết bị. NULL nếu không lấy được
     -- ── PHÂN LOẠI SỰ KIỆN ───────────────────────────────────────
     -- PUBLIC_SCAN:      Quét mã lộ thiên (chưa cào lớp phủ)
     -- PIN_VERIFICATION: Quét + nhập hidden PIN (đã cào)
-    scan_type              ENUM('PUBLIC_SCAN', 'PIN_VERIFICATION') NOT NULL,
+    -- TOKEN_SCAN:       Quét guest token/link token để mở lại kết quả cũ hoặc claim QR cho user
+    scan_type              ENUM('PUBLIC_SCAN', 'PIN_VERIFICATION', 'TOKEN_SCAN') NOT NULL,
     -- Kết quả trả về cho người dùng tại thời điểm quét:
     -- INFO_SHOWN  → Hiển thị thông tin chung (PUBLIC_SCAN thành công)
     -- VALID       → Hàng thật (PIN đúng, kích hoạt lần đầu hoặc cùng thiết bị)
@@ -375,7 +414,8 @@ CREATE TABLE scan_global_logs (
     -- SUSPICIOUS  → Cảnh báo (PIN đúng nhưng từ thiết bị khác sau khi đã kích hoạt)
     -- BLOCKED     → Mã đã bị khóa
     -- EXPIRED     → Mã đã hết hạn bảo hành
-    scan_result            ENUM('INFO_SHOWN', 'VALID', 'FAKE', 'SUSPICIOUS', 'BLOCKED', 'EXPIRED') NOT NULL,
+    -- OWNED       → Mã hợp lệ nhưng đã bị user khác sở hữu nên không được claim lại
+    scan_result            ENUM('INFO_SHOWN', 'VALID', 'FAKE', 'SUSPICIOUS', 'BLOCKED', 'EXPIRED', 'OWNED') NOT NULL,
     -- ── METADATA VỊ TRÍ & THIẾT BỊ ─────────────────────────────
     ip_address             VARCHAR(50),                   -- Địa chỉ IP của người quét
     location               VARCHAR(255),                  -- Vị trí parse từ IP hoặc GPS (ví dụ: "Quận 1, TP.HCM")
@@ -384,6 +424,7 @@ CREATE TABLE scan_global_logs (
     -- !! KHÔNG CÓ updated_at, is_deleted, deleted_at !!
     -- Bảng này là bất biến (append-only). Không ai được sửa hay xóa.
     FOREIGN KEY (qr_id)          REFERENCES qr_codes(qr_id)                           ON DELETE SET NULL,
+    FOREIGN KEY (batch_id)       REFERENCES batches(batch_id)                         ON DELETE SET NULL,
     FOREIGN KEY (account_id)     REFERENCES accounts(account_id)                      ON DELETE SET NULL,
     FOREIGN KEY (fingerprint_id) REFERENCES device_fingerprints(fingerprint_id)       ON DELETE SET NULL
 );
@@ -408,6 +449,8 @@ CREATE TABLE user_qr_collections (
     deleted_at         TIMESTAMP    NULL,                 -- Thời điểm user nhấn xóa. Trigger tự điền. NULL khi chưa xóa
     -- Ràng buộc: 1 user chỉ được bind 1 mã QR cụ thể đúng 1 lần, không duplicate
     UNIQUE KEY uq_user_qr_bind (user_id, qr_id),
+    -- Ràng buộc nghiệp vụ mới: 1 mã QR chỉ có đúng 1 user sở hữu trong toàn hệ thống
+    UNIQUE KEY uq_qr_single_owner (qr_id),
 
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (qr_id)   REFERENCES qr_codes(qr_id)
@@ -425,6 +468,32 @@ CREATE TABLE user_scan_history (
     UNIQUE KEY uq_user_log (user_id, log_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (log_id)  REFERENCES scan_global_logs(log_id)
+);
+
+-- Guest token luu ket qua scan cua khach vang lai de mo lai tren moi thiet bi
+-- va cho phep user dang nhap sau nay claim ma ve tai khoan cua minh.
+CREATE TABLE guest_scan_tokens (
+    guest_token_id       VARCHAR(50)  PRIMARY KEY,
+    token_hash           VARCHAR(255) NOT NULL UNIQUE,
+    qr_id                VARCHAR(50)  NULL,
+    batch_id             VARCHAR(50)  NULL,
+    source_log_id        VARCHAR(50)  NULL,
+    scan_verdict         ENUM('GENUINE', 'INTACT', 'INFO', 'SUSPICIOUS', 'BLOCKED', 'EXPIRED', 'FAKE', 'OWNED') NOT NULL,
+    response_code        VARCHAR(100) NULL,
+    response_message     TEXT         NULL,
+    result_snapshot_json JSON         NOT NULL,
+    claim_url            VARCHAR(500) NOT NULL,
+    qr_file_name         VARCHAR(255) NOT NULL UNIQUE,
+    qr_storage_path      VARCHAR(500) NOT NULL,
+    qr_public_url        VARCHAR(500) NOT NULL,
+    claimed_by_user_id   VARCHAR(50)  NULL,
+    claimed_at           TIMESTAMP    NULL,
+    created_at           TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_resolved_at     TIMESTAMP    NULL,
+    FOREIGN KEY (qr_id)              REFERENCES qr_codes(qr_id)          ON DELETE SET NULL,
+    FOREIGN KEY (batch_id)           REFERENCES batches(batch_id)        ON DELETE SET NULL,
+    FOREIGN KEY (source_log_id)      REFERENCES scan_global_logs(log_id) ON DELETE SET NULL,
+    FOREIGN KEY (claimed_by_user_id) REFERENCES users(user_id)           ON DELETE SET NULL
 );
 -- ============================================================
 -- PHẦN 12: QUẢN LÝ PHIÊN ĐĂNG NHẬP (SLIDING WINDOW TOKEN)
@@ -459,6 +528,57 @@ CREATE TABLE account_sessions (
     FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
 );
 
+-- ============================================================
+-- PHAN 13: ADMIN WEBSITE QR URL HISTORY
+-- Muc dich: moi lan admin doi URL website chinh thi he thong sinh 1 QR moi
+-- va luu lai lich su de frontend co the hien preview + theo doi phien ban.
+-- ============================================================
+CREATE TABLE website_qr_configs (
+    config_id            VARCHAR(50)  PRIMARY KEY,
+    website_url          VARCHAR(500) NOT NULL,
+    compact_url          VARCHAR(255) NOT NULL,
+    change_number        INT          NOT NULL,
+    qr_file_name         VARCHAR(255) NOT NULL UNIQUE,
+    qr_storage_path      VARCHAR(500) NOT NULL,
+    qr_public_url        VARCHAR(500) NOT NULL,
+    created_by_admin_id  VARCHAR(50)  NULL,
+    created_at           TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_website_qr_change_number (change_number),
+    FOREIGN KEY (created_by_admin_id) REFERENCES accounts(account_id) ON DELETE SET NULL
+);
+
+DROP TRIGGER IF EXISTS trg_session_set_expiry_on_insert;
+DROP TRIGGER IF EXISTS trg_session_extend_expiry_on_update;
+
+DELIMITER $$
+
+CREATE TRIGGER trg_session_set_expiry_on_insert
+BEFORE INSERT ON account_sessions
+FOR EACH ROW
+BEGIN
+    IF NEW.last_active_at IS NULL THEN
+        SET NEW.last_active_at = CURRENT_TIMESTAMP;
+    END IF;
+
+    IF NEW.expires_at IS NULL OR NEW.expires_at <= NEW.last_active_at THEN
+        SET NEW.expires_at = DATE_ADD(NEW.last_active_at, INTERVAL 4 DAY);
+    END IF;
+END$$
+
+CREATE TRIGGER trg_session_extend_expiry_on_update
+BEFORE UPDATE ON account_sessions
+FOR EACH ROW
+BEGIN
+    IF NEW.last_active_at IS NULL THEN
+        SET NEW.last_active_at = CURRENT_TIMESTAMP;
+    END IF;
+
+    IF NEW.last_active_at <> OLD.last_active_at THEN
+        SET NEW.expires_at = DATE_ADD(NEW.last_active_at, INTERVAL 4 DAY);
+    END IF;
+END$$
+
+DELIMITER ;
 
 -- ============================================================
 -- PHẦN 9: INDEXING - TỐI ƯU HIỆU SUẤT
@@ -479,6 +599,8 @@ CREATE INDEX idx_qr_effective_expires   ON qr_codes(effective_from, expires_at);
 -- ── scan_global_logs ─────────────────────────────────────────
 -- Query phổ biến nhất: "Xem toàn bộ lịch sử quét của mã QR này theo thứ tự thời gian"
 CREATE INDEX idx_log_qr_time            ON scan_global_logs(qr_id, scanned_at);
+-- Giup truy vet nhanh lich su quet theo batch cho info QR va guest token
+CREATE INDEX idx_log_batch_time         ON scan_global_logs(batch_id, scanned_at);
 -- Lấy toàn bộ lịch sử quét của một tài khoản (trang quản lý cá nhân)
 CREATE INDEX idx_log_account            ON scan_global_logs(account_id);
 
@@ -495,6 +617,21 @@ CREATE INDEX idx_log_result             ON scan_global_logs(scan_result);
 -- ── user_qr_collections ──────────────────────────────────────
 -- Query phổ biến: "Lấy danh sách mã QR đang hiệu lực (chưa bị xóa) của user X"
 CREATE INDEX idx_collection_user_active ON user_qr_collections(user_id, is_deleted_by_user);
+
+CREATE INDEX idx_batch_qr_labels_batch_sequence
+    ON batch_qr_labels(batch_id, sequence_no);
+
+CREATE INDEX idx_batch_qr_labels_qr_id
+    ON batch_qr_labels(qr_id);
+
+
+CREATE INDEX idx_batch_qr_label_assets_label_type
+ON batch_qr_label_assets(label_id, asset_type);
+
+-- ── guest_scan_tokens ───────────────────────────────────────
+CREATE INDEX idx_guest_token_qr         ON guest_scan_tokens(qr_id);
+CREATE INDEX idx_guest_token_batch      ON guest_scan_tokens(batch_id);
+CREATE INDEX idx_guest_token_claimed    ON guest_scan_tokens(claimed_by_user_id, claimed_at);
 
 -- ── approval_requests ────────────────────────────────────────
 -- Giúp Brand/Admin lọc nhanh: "Có yêu cầu đang PENDING cho sản phẩm này không?"
@@ -540,6 +677,23 @@ ON pictures(picture_group, processing_status, created_at);
 CREATE INDEX idx_pictures_source_created
 ON pictures(capture_source, created_at);
 
+CREATE INDEX idx_website_qr_created_at
+ON website_qr_configs(created_at);
+
+-- ============================================================
+-- PATCH v2.4: FORGOT PASSWORD OTP + RESET TOKEN
+-- Muc dich: doi cot reset_otp thanh hash va them reset token tam
+-- de luong quen mat khau an toan hon cho backend.
+-- ============================================================
+ALTER TABLE accounts
+  CHANGE COLUMN reset_otp reset_otp_hash VARCHAR(255) NULL,
+  MODIFY COLUMN otp_expiry DATETIME NULL,
+  ADD COLUMN reset_token_hash VARCHAR(255) NULL AFTER otp_expiry,
+  ADD COLUMN reset_token_expiry DATETIME NULL AFTER reset_token_hash;
+
 -- ============================================================
 -- END OF SCRIPT
 -- ============================================================
+
+
+

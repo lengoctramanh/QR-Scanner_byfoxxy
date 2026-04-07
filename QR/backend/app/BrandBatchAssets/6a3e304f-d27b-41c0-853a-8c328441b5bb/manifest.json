@@ -1,0 +1,390 @@
+{
+  "batchId": "6a3e304f-d27b-41c0-853a-8c328441b5bb",
+  "batchCode": "BAT-ABC-MN220715",
+  "productName": "ABC",
+  "websiteUrl": "https://localhost:5173/",
+  "infoToken": "INFO-ad17aa6f3f9367a3db0e4aab-6a3e304f",
+  "createdAt": "2026-03-22T17:51:46.549Z",
+  "labels": [
+    {
+      "sequenceNo": 1,
+      "qrId": "325f9b1d-8976-4e86-83b5-6c70dfcda94e",
+      "publicToken": "59024f44da8b6e2201b2728022e74cdd53a9",
+      "files": {
+        "websiteQr": {
+          "fileName": "qr-web-link.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\qr-web-link.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/qr-web-link.svg"
+        },
+        "qr1": {
+          "fileName": "001-abc-qr-1.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\001-abc-qr-1.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/001-abc-qr-1.svg"
+        },
+        "qr2": {
+          "fileName": "001-abc-qr-2.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\001-abc-qr-2.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/001-abc-qr-2.svg"
+        },
+        "qr3": {
+          "fileName": "001-abc-qr-3.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\001-abc-qr-3.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/001-abc-qr-3.svg"
+        },
+        "labelFrame": {
+          "fileName": "001-abc-label-frame.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\001-abc-label-frame.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/001-abc-label-frame.svg"
+        }
+      },
+      "qrMeta": {
+        "version": 12,
+        "maskPattern": 3,
+        "forcedRatio": 0.1427038626609442,
+        "errorsIntroduced": 532
+      }
+    },
+    {
+      "sequenceNo": 2,
+      "qrId": "9fd56fe5-f868-4a13-98f6-383cf70a71a6",
+      "publicToken": "32ee8a3ec372e3a1f66cc2c2266f2620e88d",
+      "files": {
+        "websiteQr": {
+          "fileName": "qr-web-link.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\qr-web-link.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/qr-web-link.svg"
+        },
+        "qr1": {
+          "fileName": "002-abc-qr-1.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\002-abc-qr-1.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/002-abc-qr-1.svg"
+        },
+        "qr2": {
+          "fileName": "002-abc-qr-2.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\002-abc-qr-2.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/002-abc-qr-2.svg"
+        },
+        "qr3": {
+          "fileName": "002-abc-qr-3.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\002-abc-qr-3.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/002-abc-qr-3.svg"
+        },
+        "labelFrame": {
+          "fileName": "002-abc-label-frame.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\002-abc-label-frame.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/002-abc-label-frame.svg"
+        }
+      },
+      "qrMeta": {
+        "version": 12,
+        "maskPattern": 3,
+        "forcedRatio": 0.148068669527897,
+        "errorsIntroduced": 552
+      }
+    },
+    {
+      "sequenceNo": 3,
+      "qrId": "ff0cabb9-d967-44f3-9fc9-2340ffa3880b",
+      "publicToken": "c76170c6c581142d264159e7aab524c2f328",
+      "files": {
+        "websiteQr": {
+          "fileName": "qr-web-link.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\qr-web-link.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/qr-web-link.svg"
+        },
+        "qr1": {
+          "fileName": "003-abc-qr-1.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\003-abc-qr-1.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/003-abc-qr-1.svg"
+        },
+        "qr2": {
+          "fileName": "003-abc-qr-2.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\003-abc-qr-2.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/003-abc-qr-2.svg"
+        },
+        "qr3": {
+          "fileName": "003-abc-qr-3.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\003-abc-qr-3.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/003-abc-qr-3.svg"
+        },
+        "labelFrame": {
+          "fileName": "003-abc-label-frame.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\003-abc-label-frame.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/003-abc-label-frame.svg"
+        }
+      },
+      "qrMeta": {
+        "version": 12,
+        "maskPattern": 1,
+        "forcedRatio": 0.14350858369098712,
+        "errorsIntroduced": 535
+      }
+    },
+    {
+      "sequenceNo": 4,
+      "qrId": "83e44cd6-b4a2-482f-8cb1-6a18b1545dcf",
+      "publicToken": "4d892147e68ba539cf8fdc226f17f6c0e133",
+      "files": {
+        "websiteQr": {
+          "fileName": "qr-web-link.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\qr-web-link.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/qr-web-link.svg"
+        },
+        "qr1": {
+          "fileName": "004-abc-qr-1.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\004-abc-qr-1.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/004-abc-qr-1.svg"
+        },
+        "qr2": {
+          "fileName": "004-abc-qr-2.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\004-abc-qr-2.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/004-abc-qr-2.svg"
+        },
+        "qr3": {
+          "fileName": "004-abc-qr-3.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\004-abc-qr-3.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/004-abc-qr-3.svg"
+        },
+        "labelFrame": {
+          "fileName": "004-abc-label-frame.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\004-abc-label-frame.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/004-abc-label-frame.svg"
+        }
+      },
+      "qrMeta": {
+        "version": 12,
+        "maskPattern": 0,
+        "forcedRatio": 0.2593884120171674,
+        "errorsIntroduced": 967
+      }
+    },
+    {
+      "sequenceNo": 5,
+      "qrId": "8fbe259f-5486-4c8a-bec6-c1666f89f43c",
+      "publicToken": "842c690ef60b636932c294ef96ee35645540",
+      "files": {
+        "websiteQr": {
+          "fileName": "qr-web-link.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\qr-web-link.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/qr-web-link.svg"
+        },
+        "qr1": {
+          "fileName": "005-abc-qr-1.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\005-abc-qr-1.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/005-abc-qr-1.svg"
+        },
+        "qr2": {
+          "fileName": "005-abc-qr-2.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\005-abc-qr-2.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/005-abc-qr-2.svg"
+        },
+        "qr3": {
+          "fileName": "005-abc-qr-3.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\005-abc-qr-3.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/005-abc-qr-3.svg"
+        },
+        "labelFrame": {
+          "fileName": "005-abc-label-frame.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\005-abc-label-frame.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/005-abc-label-frame.svg"
+        }
+      },
+      "qrMeta": {
+        "version": 12,
+        "maskPattern": 3,
+        "forcedRatio": 0.13948497854077252,
+        "errorsIntroduced": 520
+      }
+    },
+    {
+      "sequenceNo": 6,
+      "qrId": "411c2e29-55de-424e-8b7e-6551184d3f06",
+      "publicToken": "0ddc9ab483a4eebc327ee8312dcde2bac39c",
+      "files": {
+        "websiteQr": {
+          "fileName": "qr-web-link.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\qr-web-link.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/qr-web-link.svg"
+        },
+        "qr1": {
+          "fileName": "006-abc-qr-1.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\006-abc-qr-1.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/006-abc-qr-1.svg"
+        },
+        "qr2": {
+          "fileName": "006-abc-qr-2.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\006-abc-qr-2.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/006-abc-qr-2.svg"
+        },
+        "qr3": {
+          "fileName": "006-abc-qr-3.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\006-abc-qr-3.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/006-abc-qr-3.svg"
+        },
+        "labelFrame": {
+          "fileName": "006-abc-label-frame.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\006-abc-label-frame.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/006-abc-label-frame.svg"
+        }
+      },
+      "qrMeta": {
+        "version": 12,
+        "maskPattern": 3,
+        "forcedRatio": 0.14350858369098712,
+        "errorsIntroduced": 535
+      }
+    },
+    {
+      "sequenceNo": 7,
+      "qrId": "ceac08f0-415c-4953-97d8-ee06298efcdf",
+      "publicToken": "69c5a9abfda661155c231863c95bfad7ea48",
+      "files": {
+        "websiteQr": {
+          "fileName": "qr-web-link.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\qr-web-link.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/qr-web-link.svg"
+        },
+        "qr1": {
+          "fileName": "007-abc-qr-1.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\007-abc-qr-1.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/007-abc-qr-1.svg"
+        },
+        "qr2": {
+          "fileName": "007-abc-qr-2.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\007-abc-qr-2.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/007-abc-qr-2.svg"
+        },
+        "qr3": {
+          "fileName": "007-abc-qr-3.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\007-abc-qr-3.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/007-abc-qr-3.svg"
+        },
+        "labelFrame": {
+          "fileName": "007-abc-label-frame.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\007-abc-label-frame.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/007-abc-label-frame.svg"
+        }
+      },
+      "qrMeta": {
+        "version": 12,
+        "maskPattern": 0,
+        "forcedRatio": 0.2626072961373391,
+        "errorsIntroduced": 979
+      }
+    },
+    {
+      "sequenceNo": 8,
+      "qrId": "a1a886b8-9f58-435f-8b1b-b66b9c96bc5d",
+      "publicToken": "ec15e6fddc58965ad74c452c72452cd4e451",
+      "files": {
+        "websiteQr": {
+          "fileName": "qr-web-link.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\qr-web-link.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/qr-web-link.svg"
+        },
+        "qr1": {
+          "fileName": "008-abc-qr-1.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\008-abc-qr-1.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/008-abc-qr-1.svg"
+        },
+        "qr2": {
+          "fileName": "008-abc-qr-2.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\008-abc-qr-2.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/008-abc-qr-2.svg"
+        },
+        "qr3": {
+          "fileName": "008-abc-qr-3.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\008-abc-qr-3.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/008-abc-qr-3.svg"
+        },
+        "labelFrame": {
+          "fileName": "008-abc-label-frame.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\008-abc-label-frame.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/008-abc-label-frame.svg"
+        }
+      },
+      "qrMeta": {
+        "version": 12,
+        "maskPattern": 3,
+        "forcedRatio": 0.14163090128755365,
+        "errorsIntroduced": 528
+      }
+    },
+    {
+      "sequenceNo": 9,
+      "qrId": "be3590b1-6f5f-43c5-a86d-60ff11c152cc",
+      "publicToken": "4c94f6e89c0242643af4c43fec73c236056f",
+      "files": {
+        "websiteQr": {
+          "fileName": "qr-web-link.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\qr-web-link.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/qr-web-link.svg"
+        },
+        "qr1": {
+          "fileName": "009-abc-qr-1.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\009-abc-qr-1.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/009-abc-qr-1.svg"
+        },
+        "qr2": {
+          "fileName": "009-abc-qr-2.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\009-abc-qr-2.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/009-abc-qr-2.svg"
+        },
+        "qr3": {
+          "fileName": "009-abc-qr-3.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\009-abc-qr-3.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/009-abc-qr-3.svg"
+        },
+        "labelFrame": {
+          "fileName": "009-abc-label-frame.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\009-abc-label-frame.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/009-abc-label-frame.svg"
+        }
+      },
+      "qrMeta": {
+        "version": 12,
+        "maskPattern": 2,
+        "forcedRatio": 0.1467274678111588,
+        "errorsIntroduced": 547
+      }
+    },
+    {
+      "sequenceNo": 10,
+      "qrId": "dbd06a87-566b-42db-a5c0-5c4f4d5fbaa5",
+      "publicToken": "9d48d1e85de31b3f7d9ed0eacb9faf49febf",
+      "files": {
+        "websiteQr": {
+          "fileName": "qr-web-link.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\qr-web-link.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/qr-web-link.svg"
+        },
+        "qr1": {
+          "fileName": "010-abc-qr-1.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\010-abc-qr-1.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/010-abc-qr-1.svg"
+        },
+        "qr2": {
+          "fileName": "010-abc-qr-2.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\010-abc-qr-2.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/010-abc-qr-2.svg"
+        },
+        "qr3": {
+          "fileName": "010-abc-qr-3.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\010-abc-qr-3.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/010-abc-qr-3.svg"
+        },
+        "labelFrame": {
+          "fileName": "010-abc-label-frame.svg",
+          "absolutePath": "D:\\Courses\\ThucTapCoSo\\System\\QR\\backend\\app\\BrandBatchAssets\\6a3e304f-d27b-41c0-853a-8c328441b5bb\\010-abc-label-frame.svg",
+          "publicUrl": "/BrandBatchAssets/6a3e304f-d27b-41c0-853a-8c328441b5bb/010-abc-label-frame.svg"
+        }
+      },
+      "qrMeta": {
+        "version": 12,
+        "maskPattern": 6,
+        "forcedRatio": 0.14645922746781115,
+        "errorsIntroduced": 546
+      }
+    }
+  ]
+}

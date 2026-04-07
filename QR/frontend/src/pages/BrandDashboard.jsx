@@ -9,29 +9,47 @@ import "./UserDashboard.css";
 export default function BrandDashboard() {
   const {
     activeTab,
+    activeExportBatchId,
+    avatarFileName,
     avatarInputRef,
     brandInfo,
+    brandProducts,
     excelFile,
     excelInputRef,
     handleAvatarChange,
+    handleAvatarDragLeave,
+    handleAvatarDragOver,
+    handleAvatarDrop,
+    handleBatchExport,
     handleExcelChange,
     handleExcelDragLeave,
     handleExcelDragOver,
     handleExcelDrop,
     handleExcelSubmit,
+    handleLogoChange,
+    handleLogoDragLeave,
+    handleLogoDragOver,
+    handleLogoDrop,
     handleManualQrSubmit,
     handleSettingsSubmit,
+    handleTemplateDownload,
     isDragging,
-    passwords,
+    isAvatarDragging,
+    isBatchUploading,
+    isLogoDragging,
+    isProductSaving,
+    isProfileSaving,
+    isTemplateDownloading,
+    latestIssuedQrAssets,
+    logoFileName,
+    logoInputRef,
+    productFeedback,
+    profileFeedback,
     qrForm,
     setActiveTab,
     setBrandInfoField,
     setExcelFile,
-    setPasswordField,
     setQrFormField,
-    showPasswords,
-    togglePasswordVisibility,
-    toggleSystemGenerated,
   } = useBrandDashboard();
 
   return (
@@ -40,26 +58,46 @@ export default function BrandDashboard() {
         <BrandDashboardSidebar brandInfo={brandInfo} avatarInputRef={avatarInputRef} onAvatarChange={handleAvatarChange} />
         <BrandDashboardContent
           activeTab={activeTab}
+          avatarFileName={avatarFileName}
+          avatarInputRef={avatarInputRef}
           brandInfo={brandInfo}
+          brandProducts={brandProducts}
+          activeExportBatchId={activeExportBatchId}
           excelFile={excelFile}
           excelInputRef={excelInputRef}
           isDragging={isDragging}
-          passwords={passwords}
+          isAvatarDragging={isAvatarDragging}
+          isBatchUploading={isBatchUploading}
+          isLogoDragging={isLogoDragging}
+          isProductSaving={isProductSaving}
+          isProfileSaving={isProfileSaving}
+          isTemplateDownloading={isTemplateDownloading}
+          latestIssuedQrAssets={latestIssuedQrAssets}
+          logoFileName={logoFileName}
+          logoInputRef={logoInputRef}
+          productFeedback={productFeedback}
+          profileFeedback={profileFeedback}
           qrForm={qrForm}
-          showPasswords={showPasswords}
           onBrandInfoChange={setBrandInfoField}
+          onAvatarChange={handleAvatarChange}
+          onAvatarDrop={handleAvatarDrop}
+          onAvatarDragLeave={handleAvatarDragLeave}
+          onAvatarDragOver={handleAvatarDragOver}
+          onBatchExport={handleBatchExport}
           onExcelChange={handleExcelChange}
           onExcelDragLeave={handleExcelDragLeave}
           onExcelDragOver={handleExcelDragOver}
           onExcelDrop={handleExcelDrop}
           onExcelRemove={() => setExcelFile(null)}
           onExcelSubmit={handleExcelSubmit}
+          onLogoChange={handleLogoChange}
+          onLogoDrop={handleLogoDrop}
+          onLogoDragLeave={handleLogoDragLeave}
+          onLogoDragOver={handleLogoDragOver}
           onManualQrSubmit={handleManualQrSubmit}
-          onPasswordChange={setPasswordField}
-          onPasswordVisibilityToggle={togglePasswordVisibility}
           onQrFormChange={setQrFormField}
           onSettingsSubmit={handleSettingsSubmit}
-          onSystemGeneratedToggle={toggleSystemGenerated}
+          onTemplateDownload={handleTemplateDownload}
           onTabChange={setActiveTab}
         />
       </div>

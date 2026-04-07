@@ -1,10 +1,11 @@
 import { Briefcase, UploadCloud } from "lucide-react";
 import FileUploadZone from "../common/FileUploadZone";
+import FieldFeedbackMessage from "../common/FieldFeedbackMessage";
 
 // Ham nay dung de render nhom truong thong tin rieng cho tai khoan brand.
 // Nhan vao: formData, ref input file va cac handler lien quan den upload va thay doi du lieu.
 // Tra ve: JSX phan thong tin thuong hieu va tai lieu xac minh.
-export default function RegisterBrandSection({ formData, fileInputRef, isDragging, onChange, onDragOver, onDragLeave, onDrop, onFileChange, onRemoveFile }) {
+export default function RegisterBrandSection({ formData, errors, fileInputRef, isDragging, onChange, onDragOver, onDragLeave, onDrop, onFileChange, onRemoveFile }) {
   return (
     <div className="form-section fade-in">
       <h4 className="section-heading">
@@ -14,31 +15,29 @@ export default function RegisterBrandSection({ formData, fileInputRef, isDraggin
         <div className="input-group">
           <label>Brand Name *</label>
           <input type="text" name="brandName" required placeholder="Vinamilk, Nike..." value={formData.brandName} onChange={onChange} />
+          <FieldFeedbackMessage message={errors.brandName} />
         </div>
         <div className="input-group">
           <label>Tax ID *</label>
           <input type="text" name="taxId" required placeholder="Business Tax Code" value={formData.taxId} onChange={onChange} />
+          <FieldFeedbackMessage message={errors.taxId} />
         </div>
 
         <div className="input-group full-width">
-          <label>Product Categories</label>
+          <label>Product Categories *</label>
           <input type="text" name="productCategories" placeholder="e.g. Milk, Shoes, Electronics..." value={formData.productCategories} onChange={onChange} />
+          <FieldFeedbackMessage message={errors.productCategories} />
         </div>
 
         <div className="input-group">
-          <label>Industry</label>
-          <select name="industry" value={formData.industry} onChange={onChange}>
-            <option value="">Select industry...</option>
-            <option value="Food & Beverage">Food & Beverage</option>
-            <option value="Fashion & Apparel">Fashion & Apparel</option>
-            <option value="Electronics">Electronics</option>
-            <option value="Health & Beauty">Health & Beauty</option>
-            <option value="Other">Other</option>
-          </select>
+          <label>Industry *</label>
+          <input type="text" name="industry" placeholder="Food & Beverage" value={formData.industry} onChange={onChange} />
+          <FieldFeedbackMessage message={errors.industry} />
         </div>
         <div className="input-group">
           <label>Website</label>
           <input type="url" name="website" placeholder="https://..." value={formData.website} onChange={onChange} />
+          <FieldFeedbackMessage message={errors.website} />
         </div>
 
         <FileUploadZone
@@ -60,6 +59,7 @@ export default function RegisterBrandSection({ formData, fileInputRef, isDraggin
           onFileChange={onFileChange}
           onRemoveFile={onRemoveFile}
         />
+        <FieldFeedbackMessage message={errors.attachments} />
       </div>
     </div>
   );

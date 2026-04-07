@@ -35,7 +35,17 @@ axiosClient.interceptors.request.use((config) => {
 // Tra ve: response.data neu thanh cong, hoac nem lai loi neu request that bai.
 axiosClient.interceptors.response.use(
   (response) => response.data,
-  (error) => Promise.reject(error),
+  (error) => {
+    if (error.response?.status === 401 && authStorage.getToken()) {
+      authStorage.clearAuth();
+
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
+
+    return Promise.reject(error);
+  },
 );
 
 export default axiosClient;

@@ -16,6 +16,16 @@ const authApi = {
   // Tra ve: Promise response tu endpoint /auth/forgot-password.
   forgotPassword: (data) => axiosClient.post("/auth/forgot-password", data),
 
+  // Ham nay dung de gui OTP len backend de xac minh va nhan reset token.
+  // Nhan vao: data la object chua email/identifier va otp 6 chu so.
+  // Tra ve: Promise response tu endpoint /auth/verify-otp.
+  verifyOtp: (data) => axiosClient.post("/auth/verify-otp", data),
+
+  // Ham nay dung de gui mat khau moi cung reset token len backend.
+  // Nhan vao: data la object chua resetToken, newPassword va confirmPassword.
+  // Tra ve: Promise response tu endpoint /auth/reset-password.
+  resetPassword: (data) => axiosClient.post("/auth/reset-password", data),
+
   // Ham nay dung de lay profile hien tai cua tai khoan dang dang nhap.
   // Nhan vao: khong nhan tham so, token da duoc axiosClient tu dong gan vao header.
   // Tra ve: Promise response tu endpoint /auth/me.

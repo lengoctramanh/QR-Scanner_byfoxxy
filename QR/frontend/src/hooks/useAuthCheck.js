@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchCurrentUserProfile } from "../services/authService";
 import { authStorage } from "../utils/authStorage";
 import { resolveRouteByRole } from "../utils/authRoutes";
 
@@ -10,16 +11,40 @@ export default function useAuthCheck(allowedRole) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = authStorage.getToken();
-    const role = authStorage.getRole();
+    let isMounted = true;
 
-    if (!token) {
-      navigate("/login");
-      return;
-    }
+    const validateSession = async () => {
+      const token = authStorage.getToken();
+      const role = authStorage.getRole();
 
-    if (allowedRole && role !== allowedRole) {
-      navigate(resolveRouteByRole(role));
-    }
+      if (!token) {
+        navigate("/login");
+        return;
+      }
+
+      const profileResult = await fetchCurrentUserProfile();
+
+      if (!isMounted) {
+        return;
+      }
+
+      if (!profileResult.success || !profileResult.data) {
+        authStorage.clearAuth();
+        navigate("/login");
+        return;
+      }
+
+      const resolvedRole = profileResult.data.role || role;
+
+      if (allowedRole && resolvedRole !== allowedRole) {
+        navigate(resolveRouteByRole(resolvedRole));
+      }
+    };
+
+    validateSession();
+
+    return () => {
+      isMounted = false;
+    };
   }, [allowedRole, navigate]);
 }

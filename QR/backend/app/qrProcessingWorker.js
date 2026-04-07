@@ -208,5 +208,6 @@ const startQrProcessingWorker = () => {
 
 module.exports = {
   requestQrProcessingCycle,
+  runPythonProcessor,
   startQrProcessingWorker,
 };

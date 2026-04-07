@@ -29,7 +29,7 @@ export const formatDateOnly = (value) => {
 // Ham nay dung de doi trang thai dang UPPER_CASE_THANH_CHU de de hien thi.
 // Nhan vao: value la chuoi trang thai goc.
 // Tra ve: chuoi trang thai da thay dau "_" bang khoang trang.
-export const formatStatusLabel = (value) => value.replaceAll("_", " ");
+export const formatStatusLabel = (value) => String(value || "--").replaceAll("_", " ");
 
 // Ham nay dung de an bot mot phan token khi hien thi tren giao dien admin.
 // Nhan vao: token la chuoi token can che bot.

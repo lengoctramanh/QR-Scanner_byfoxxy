@@ -21,7 +21,22 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      "/QRSCANUSER": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
       "/ProcessedQRScan": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/QRURL": {
+        target: "http://localhost:5000",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/BrandBatchAssets": {
         target: "http://localhost:5000",
         changeOrigin: true,
         secure: false,

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import FormFeedbackMessage from "../components/common/FormFeedbackMessage";
 import RegisterAccountSection from "../components/register/RegisterAccountSection";
 import RegisterBrandSection from "../components/register/RegisterBrandSection";
 import RegisterPolicyAgreement from "../components/register/RegisterPolicyAgreement";
@@ -10,7 +11,28 @@ import "./Register.css";
 // Nhan vao: khong nhan props, su dung du lieu/handler tu useRegisterForm.
 // Tra ve: giao dien dang ky cho user hoac brand.
 export default function Register() {
-  const { role, showPassword, showConfirmPassword, isDragging, formData, fileInputRef, handleChange, handleRoleChange, handleFileChange, handleDragOver, handleDragLeave, handleDrop, handleRemoveFile, handleSubmit, toggleShowPassword, toggleShowConfirmPassword } = useRegisterForm();
+  const {
+    role,
+    showPassword,
+    showConfirmPassword,
+    isDragging,
+    formData,
+    validationErrors,
+    formMessage,
+    formTone,
+    isSubmitting,
+    fileInputRef,
+    handleChange,
+    handleRoleChange,
+    handleFileChange,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleRemoveFile,
+    handleSubmit,
+    toggleShowPassword,
+    toggleShowConfirmPassword,
+  } = useRegisterForm();
 
   return (
     <main className="register-main">
@@ -21,16 +43,38 @@ export default function Register() {
         </div>
 
         <RegisterRoleSelector role={role} onRoleChange={handleRoleChange} />
+        <FormFeedbackMessage tone={formTone} message={formMessage} />
 
         <form className="register-form" onSubmit={handleSubmit} noValidate>
-          <RegisterAccountSection formData={formData} showPassword={showPassword} showConfirmPassword={showConfirmPassword} onChange={handleChange} onTogglePassword={toggleShowPassword} onToggleConfirmPassword={toggleShowConfirmPassword} />
+          <RegisterAccountSection
+            formData={formData}
+            errors={validationErrors}
+            showPassword={showPassword}
+            showConfirmPassword={showConfirmPassword}
+            onChange={handleChange}
+            onTogglePassword={toggleShowPassword}
+            onToggleConfirmPassword={toggleShowConfirmPassword}
+          />
 
-          {role === "brand" ? <RegisterBrandSection formData={formData} fileInputRef={fileInputRef} isDragging={isDragging} onChange={handleChange} onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onFileChange={handleFileChange} onRemoveFile={handleRemoveFile} /> : null}
+          {role === "brand" ? (
+            <RegisterBrandSection
+              formData={formData}
+              errors={validationErrors}
+              fileInputRef={fileInputRef}
+              isDragging={isDragging}
+              onChange={handleChange}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onFileChange={handleFileChange}
+              onRemoveFile={handleRemoveFile}
+            />
+          ) : null}
 
-          <RegisterPolicyAgreement checked={formData.agreePolicy} onChange={handleChange} />
+          <RegisterPolicyAgreement checked={formData.termsAccepted} error={validationErrors.termsAccepted} onChange={handleChange} />
 
-          <button type="submit" className="submit-reg-btn">
-            CREATE ACCOUNT
+          <button type="submit" className="submit-reg-btn" disabled={isSubmitting}>
+            {isSubmitting ? "CREATING..." : "CREATE ACCOUNT"}
           </button>
        
           <div className="login-prompt">

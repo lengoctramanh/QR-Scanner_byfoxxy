@@ -18,6 +18,7 @@ const scanLogModel = {
           qr_public_token_input,
           hidden_pin_input_hash,
           qr_id,
+          batch_id,
           account_id,
           fingerprint_id,
           scan_type,
@@ -26,7 +27,7 @@ const scanLogModel = {
           location,
           device_info
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const [result] = await executor.execute(query, [
@@ -34,6 +35,7 @@ const scanLogModel = {
         scanLogPayload.qrPublicTokenInput,
         scanLogPayload.hiddenPinInputHash,
         scanLogPayload.qrId,
+        scanLogPayload.batchId,
         scanLogPayload.accountId,
         scanLogPayload.fingerprintId,
         scanLogPayload.scanType,
