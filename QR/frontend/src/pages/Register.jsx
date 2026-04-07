@@ -76,7 +76,7 @@ export default function Register() {
           <button type="submit" className="submit-reg-btn" disabled={isSubmitting}>
             {isSubmitting ? "CREATING..." : "CREATE ACCOUNT"}
           </button>
-
+       
           <div className="login-prompt">
             Already have an account? <Link to="/login">Sign In here</Link>
           </div>
